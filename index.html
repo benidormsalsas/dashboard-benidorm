@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Benidorm Gonzi</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#22497A;--azul-mid:#2d5a94;--azul-claro:#e8f0fb;
+  --rojo:#c0392b;--gris-bg:#f2f5fa;--gris-borde:#d8e2f0;
+  --texto:#1a1a2e;--gris:#6b7a99;--verde-ok:#16a34a;--verde-bg:#dcfce7;
+  --amarillo:#d97706;--amarillo-bg:#fef3c7;--rojo-sem:#dc2626;--rojo-bg:#fee2e2;
+  --radio:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--texto);min-height:100vh;}
+.header{background:var(--azul);padding:0 24px;display:flex;align-items:center;height:60px;box-shadow:0 2px 12px rgba(34,73,122,.25);}
+.logo-b{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#fff;margin-right:14px;flex-shrink:0;}
+.header-title{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;text-transform:uppercase;}
+.header-gonzi{font-size:10px;color:rgba(255,255,255,.55);letter-spacing:2px;text-transform:uppercase;margin-top:1px;}
+.contenido{max-width:1280px;margin:0 auto;padding:20px 20px 48px;}
+.tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap;}
+.tab{padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid var(--gris-borde);background:#fff;color:var(--gris);font-family:'Montserrat',sans-serif;transition:all .15s;}
+.tab.activo{background:var(--azul);color:#fff;border-color:var(--azul);}
+.filtro-mes{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.filtro-mes label{font-size:12px;font-weight:600;color:var(--gris);font-family:'Montserrat',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
+.filtro-mes select{padding:7px 12px;border:2px solid var(--gris-borde);border-radius:8px;font-size:13px;color:var(--texto);background:#fff;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif;}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.kpi{background:#fff;border-radius:var(--radio);padding:18px 20px;box-shadow:0 1px 4px rgba(34,73,122,.08);border-left:4px solid var(--azul);}
+.kpi-label{font-size:10px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;font-family:'Montserrat',sans-serif;font-weight:600;}
+.kpi-valor{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;color:var(--azul);line-height:1;}
+.kpi-comp{font-size:11px;color:var(--gris);margin-top:5px;}
+.kpi-comp.sube{color:var(--verde-ok);font-weight:600;}
+.kpi-comp.baja{color:var(--rojo-sem);font-weight:600;}
+.seccion{background:#fff;border-radius:var(--radio);padding:20px 22px;margin-bottom:18px;box-shadow:0 1px 4px rgba(34,73,122,.08);}
+.seccion-titulo{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--azul);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--azul-claro);}
+.leyenda{display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap;}
+.leyenda-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gris);}
+.leyenda-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.grafico-wrap{overflow-x:auto;}
+.grafico-barras{display:flex;align-items:flex-end;gap:6px;height:180px;min-width:500px;padding:20px 0 0;}
+.grupo-barra{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;}
+.barras-duo{display:flex;align-items:flex-end;gap:2px;width:100%;}
+.barra{flex:1;border-radius:3px 3px 0 0;min-height:2px;position:relative;}
+.barra.fact{background:var(--azul);}
+.barra.fact.activo{background:#1a5fa8;}
+.barra.gan{background:var(--rojo);opacity:.7;}
+.barra.gan.activo{opacity:1;}
+.barra-monto{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;white-space:nowrap;color:var(--texto);}
+.barra-label{font-size:9px;color:var(--gris);text-align:center;}
+.tabla-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead tr{background:var(--azul);}
+thead th{padding:9px 11px;text-align:center;font-weight:600;font-size:10px;white-space:nowrap;color:#fff;font-family:'Montserrat',sans-serif;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;user-select:none;}
+thead th:first-child{text-align:left;}
+thead th:hover{background:var(--azul-mid);}
+thead th.sort-asc::after{content:' ▲';font-size:9px;}
+thead th.sort-desc::after{content:' ▼';font-size:9px;}
+tbody tr{border-bottom:1px solid var(--gris-borde);transition:background .1s;}
+tbody tr:hover{background:var(--azul-claro);}
+tbody td{padding:8px 11px;text-align:center;white-space:nowrap;font-size:12px;}
+tbody td:first-child{text-align:left;font-weight:500;}
+.td-val{color:var(--azul);font-weight:600;}
+.td-cero{color:#d1d5db;font-size:11px;}
+.fila-activa{background:var(--azul-claro)!important;font-weight:600;}
+.sem{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;font-family:'Montserrat',sans-serif;}
+.sem.verde{background:var(--verde-bg);color:var(--verde-ok);}
+.sem.amarillo{background:var(--amarillo-bg);color:var(--amarillo);}
+.sem.rojo{background:var(--rojo-bg);color:var(--rojo-sem);}
+.btn-wa{background:#25d366;color:#fff;border:none;border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;font-weight:600;}
+.btn-wa:hover{background:#1ea952;}
+/* MOBILE TAB */
+.mobile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mobile-card{background:#fff;border-radius:14px;padding:20px 18px;box-shadow:0 2px 8px rgba(34,73,122,.1);border-top:4px solid var(--azul);position:relative;overflow:hidden;}
+.mobile-card.verde{border-top-color:var(--verde-ok);}
+.mobile-card.rojo{border-top-color:var(--rojo);}
+.mobile-card.amarillo{border-top-color:var(--amarillo);}
+.mobile-card-icon{position:absolute;right:14px;top:14px;font-size:24px;opacity:.2;}
+.mobile-card-label{font-size:10px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:1px;font-family:'Montserrat',sans-serif;margin-bottom:6px;}
+.mobile-card-valor{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:var(--azul);line-height:1;margin-bottom:6px;}
+.mobile-card.verde .mobile-card-valor{color:var(--verde-ok);}
+.mobile-card.rojo .mobile-card-valor{color:var(--rojo);}
+.mobile-card.amarillo .mobile-card-valor{color:var(--amarillo);}
+.mobile-card-comp{font-size:11px;font-weight:600;}
+.mobile-card-comp.sube{color:var(--verde-ok);}
+.mobile-card-comp.baja{color:var(--rojo-sem);}
+.mobile-mes{text-align:center;font-family:'Montserrat',sans-serif;font-size:13px;color:var(--gris);margin-bottom:16px;font-weight:600;}
+.loading{text-align:center;padding:60px;color:var(--gris);}
+.spinner{width:32px;height:32px;border:3px solid var(--gris-borde);border-top-color:var(--azul);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:700px){
+  .kpis{grid-template-columns:repeat(2,1fr);}
+  .kpi-valor{font-size:16px;}
+  .tabs .tab{padding:7px 12px;font-size:11px;}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo-b">B</div>
+  <div>
+    <div class="header-title">Benidorm</div>
+    <div class="header-gonzi">Panel de Gonzi</div>
+  </div>
+</div>
+<div class="contenido">
+  <div class="tabs">
+    <div class="tab activo" onclick="mostrarTab('graficos')">📊 Gráficos</div>
+    <div class="tab" onclick="mostrarTab('analitico')">📋 Analítico</div>
+    <div class="tab" onclick="mostrarTab('mobile')">📱 Mobile</div>
+  </div>
+  <div id="tab-graficos"><div class="loading"><div class="spinner"></div><p>Cargando datos...</p></div></div>
+  <div id="tab-analitico" style="display:none"></div>
+  <div id="tab-mobile" style="display:none"></div>
+</div>
+
+<script>
+const SHEET_ID = '1h8KpIRKx75h4CMHNIvL5vye4LQ_O_ReyisIZOrpass0';
+const WA_NUM   = '5491134165086';
+let D = null, MES_SEL = null;
+let sortCol = -1, sortDir = 1;
+
+async function leerHoja(nombre) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(nombre)}&headers=1`;
+  const r   = await fetch(url);
+  const txt = await r.text();
+  const json = JSON.parse(txt.substring(47, txt.length - 2));
+  return json.table;
+}
+
+function tablaAFilas(tabla) {
+  if (!tabla || !tabla.rows) return [];
+  return tabla.rows.map(row =>
+    (tabla.cols || []).map((col, i) => {
+      const c = row.c && row.c[i];
+      if (!c || c.v === null || c.v === undefined) return '';
+      if (typeof c.v === 'string' && c.v.startsWith('Date(')) {
+        const p = c.v.replace('Date(','').replace(')','').split(',');
+        return new Date(+p[0], +p[1], +p[2]);
+      }
+      return c.v;
+    })
+  );
+}
+
+window.onload = async function() {
+  try {
+    const [tablaBase, tablaClientes] = await Promise.all([
+      leerHoja('BASE'),
+      leerHoja('CLIENTES')
+    ]);
+    const filasBase     = tablaAFilas(tablaBase);
+    const filasClientes = tablaAFilas(tablaClientes);
+
+    const mapaClientes = {};
+    for (const row of filasClientes) {
+      if (row[0]) mapaClientes[row[0].toString().trim()] = {
+        telefono:  row[6] ? row[6].toString() : '',
+        provincia: row[5] ? row[5].toString() : '',
+      };
+    }
+
+    D = calcularDatos(filasBase, mapaClientes);
+    MES_SEL = D.mesActual.mes;
+    renderGraficos();
+    renderAnalitico();
+    renderMobile();
+  } catch(e) {
+    document.getElementById('tab-graficos').innerHTML =
+      `<div style="color:var(--rojo);padding:20px;background:#fff;border-radius:10px">
+        <strong>Error al cargar datos:</strong> ${e.message}<br>
+        <small style="color:var(--gris)">Asegurate de que el Sheets esté compartido como público visor.</small>
+      </div>`;
+  }
+};
+
+function calcularDatos(filas, mapaClientes) {
+  const hoy = new Date();
+  const porMes = {}, porCliente = {};
+  const mesesSet = new Set();
+
+  for (const fila of filas) {
+    const cliente  = fila[0] ? fila[0].toString().trim() : '';
+    const fecha    = fila[1] instanceof Date ? fila[1] : null;
+    const cantidad = parseFloat(fila[5]) || 0;
+    const monto    = parseFloat(fila[4]) || 0;
+    const ga       = parseFloat(fila[9]) || 0;
+    const nRemito  = fila[6] ? fila[6].toString() : '';
+    const mes      = fila[12] ? fila[12].toString().trim() : '';
+    const tipo     = fila[13] ? fila[13].toString() : 'PRODUCTO';
+
+    if (!cliente || !mes || mes === 'MES' || mes.includes('1899')) continue;
+
+    mesesSet.add(mes);
+    if (!porMes[mes]) porMes[mes] = { facturado:0, cajas:0, ganancia:0, remitos:new Set() };
+    if (!porCliente[cliente]) porCliente[cliente] = { cajasPorMes:{}, fechas:[], totalCajas:0, totalMonto:0, totalGA:0 };
+
+    // GA: todos los tipos
+    porMes[mes].ganancia += ga;
+    porCliente[cliente].totalGA = (porCliente[cliente].totalGA || 0) + ga;
+
+    if (tipo === 'PRODUCTO') {
+      porMes[mes].facturado += monto;
+      porMes[mes].cajas     += cantidad;
+      if (nRemito) porMes[mes].remitos.add(nRemito);
+      porCliente[cliente].cajasPorMes[mes] = (porCliente[cliente].cajasPorMes[mes]||0) + cantidad;
+      porCliente[cliente].totalCajas += cantidad;
+      porCliente[cliente].totalMonto  = (porCliente[cliente].totalMonto||0) + monto;
+      if (fecha) porCliente[cliente].fechas.push(fecha.toDateString());
+    }
+  }
+
+  const meses         = Array.from(mesesSet).sort();
+  const facturado     = meses.map(m => Math.round(porMes[m]?.facturado||0));
+  const ganancia      = meses.map(m => Math.round(porMes[m]?.ganancia||0));
+  const pedidosPorMes = meses.map(m => porMes[m]?.remitos?.size||0);
+  const cajasPorMes   = meses.map(m => Math.round(porMes[m]?.cajas||0));
+
+  const mesActualKey   = meses[meses.length-1];
+  const mesAnteriorKey = meses[meses.length-2];
+  const mA   = porMes[mesActualKey]   || {};
+  const mAnt = porMes[mesAnteriorKey] || {};
+
+  const clientes = Object.entries(porCliente).map(([nombre, data]) => {
+    const fechasUnicas = [...new Set(data.fechas)].map(s => new Date(s)).sort((a,b) => b-a);
+    const ultima       = fechasUnicas[0];
+    const dias         = ultima ? Math.floor((hoy-ultima)/86400000) : 999;
+    const ultimoPedido = ultima ? ultima.toLocaleDateString('es-AR') : '--';
+    let frecDias = 0;
+    if (fechasUnicas.length > 1) {
+      const ints = [];
+      for (let i=0;i<fechasUnicas.length-1;i++) ints.push(Math.abs((fechasUnicas[i]-fechasUnicas[i+1])/86400000));
+      frecDias = Math.round(ints.reduce((a,b)=>a+b,0)/ints.length);
+    }
+    const nPedidos  = fechasUnicas.length;
+    const promCajas = nPedidos > 0 ? Math.round(data.totalCajas/nPedidos) : 0;
+    const promMonto = nPedidos > 0 ? Math.round(data.totalMonto/nPedidos) : 0;
+    const cliInfo   = mapaClientes[nombre] || {};
+    return {
+      nombre, cajasPorMes:data.cajasPorMes,
+      totalCajas:Math.round(data.totalCajas),
+      totalMonto:Math.round(data.totalMonto||0),
+      totalGA:Math.round(data.totalGA||0),
+      nPedidos, promCajas, promMonto,
+      ultimoPedido, diasSinPedir:dias, frecDias,
+      telefono:cliInfo.telefono||'', provincia:cliInfo.provincia||''
+    };
+  }).filter(c=>c.totalCajas>0).sort((a,b)=>b.totalCajas-a.totalCajas);
+
+  return {
+    mesActual:   {mes:mesActualKey,   facturado:Math.round(mA.facturado||0),   cajas:Math.round(mA.cajas||0),   pedidos:mA.remitos?.size||0,   ganancia:Math.round(mA.ganancia||0)},
+    mesAnterior: {mes:mesAnteriorKey, facturado:Math.round(mAnt.facturado||0), cajas:Math.round(mAnt.cajas||0), pedidos:mAnt.remitos?.size||0, ganancia:Math.round(mAnt.ganancia||0)},
+    meses, facturado, ganancia, pedidosPorMes, cajasPorMes, clientes
+  };
+}
+
+function mostrarTab(t) {
+  ['graficos','analitico','mobile'].forEach(id=>document.getElementById('tab-'+id).style.display=id===t?'':'none');
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('activo',['graficos','analitico','mobile'][i]===t));
+}
+
+// ══ TAB GRÁFICOS ══
+function renderGraficos() {
+  const idx  = D.meses.indexOf(MES_SEL);
+  const idxA = idx > 0 ? idx-1 : -1;
+  const fact  = D.facturado[idx]||0,    gan   = D.ganancia[idx]||0;
+  const cajas = D.cajasPorMes[idx]||0,  peds  = D.pedidosPorMes[idx]||0;
+  const fA=idxA>=0?D.facturado[idxA]:null, gA=idxA>=0?D.ganancia[idxA]:null;
+  const cA=idxA>=0?D.cajasPorMes[idxA]:null, pA=idxA>=0?D.pedidosPorMes[idxA]:null;
+
+  const opts = D.meses.slice().reverse().map(m=>
+    `<option value="${m}" ${m===MES_SEL?'selected':''}>${fml(m)}</option>`).join('');
+
+  const m12=D.meses.slice(-12), f12=D.facturado.slice(-12), g12=D.ganancia.slice(-12), maxV=Math.max(...f12,1);
+  const barras=m12.map((m,i)=>{
+    const hF=Math.max(Math.round((f12[i]/maxV)*150),2), hG=Math.max(Math.round((g12[i]/maxV)*150),2), ac=m===MES_SEL?'activo':'';
+    return `<div class="grupo-barra">
+      <div class="barras-duo">
+        <div class="barra fact ${ac}" style="height:${hF}px"><div class="barra-monto">${pk(f12[i])}</div></div>
+        <div class="barra gan  ${ac}" style="height:${hG}px"><div class="barra-monto">${pk(g12[i])}</div></div>
+      </div>
+      <div class="barra-label">${m.split(' ')[1]}/${m.split(' ')[0].slice(2)}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('tab-graficos').innerHTML=`
+    <div class="filtro-mes"><label>Mes:</label><select onchange="cambiarMes(this.value)">${opts}</select></div>
+    <div class="kpis">
+      ${kpi('💰 Facturado',pf(fact),cmp(fact,fA))}
+      ${kpi('📈 Ganancia',pf(gan),cmp(gan,gA))}
+      ${kpi('📦 Cajas',cajas,cmp(cajas,cA))}
+      ${kpi('🧾 Pedidos',peds,cmp(peds,pA))}
+    </div>
+    <div class="seccion">
+      <div class="seccion-titulo">📊 Evolución mensual</div>
+      <div class="leyenda">
+        <div class="leyenda-item"><div class="leyenda-dot" style="background:var(--azul)"></div>Facturado</div>
+        <div class="leyenda-item"><div class="leyenda-dot" style="background:var(--rojo)"></div>Ganancia</div>
+      </div>
+      <div class="grafico-wrap"><div class="grafico-barras">${barras}</div></div>
+    </div>`;
+}
+
+function cambiarMes(m){ MES_SEL=m; renderGraficos(); }
+
+// ══ TAB ANALÍTICO ══
+function renderAnalitico(col, dir) {
+  if (col !== undefined) { sortCol = col; sortDir = dir; }
+  const meses8 = D.meses.slice(-8);
+
+  // Columnas: nombre(0), cajas x mes(1..8), total(9), pedidos(10), prom cajas(11), prom $fact(12), GA total(13), frec(14), último(15), días(16)
+  const COLS = [
+    {label:'Cliente',      key:'nombre',       fn:c=>c.nombre,        num:false},
+    ...meses8.map((m,i)=>({label:`${m.split(' ')[1]}/${m.split(' ')[0].slice(2)}`, key:`mes${i}`, fn:c=>Math.round(c.cajasPorMes[m]||0), num:true})),
+    {label:'Total cj',     key:'totalCajas',   fn:c=>c.totalCajas,    num:true},
+    {label:'Pedidos',      key:'nPedidos',      fn:c=>c.nPedidos,      num:true},
+    {label:'Prom cj',      key:'promCajas',    fn:c=>c.promCajas,     num:true},
+    {label:'Prom $fact',   key:'promMonto',    fn:c=>c.promMonto,     num:true},
+    {label:'GA total',     key:'totalGA',      fn:c=>c.totalGA,       num:true},
+    {label:'Frec.',        key:'frecDias',     fn:c=>c.frecDias,      num:true},
+    {label:'Último ped.',  key:'ultimoPedido', fn:c=>c.ultimoPedido,  num:false},
+    {label:'Días',         key:'diasSinPedir', fn:c=>c.diasSinPedir,  num:true},
+  ];
+
+  let clientes = [...D.clientes];
+  if (sortCol >= 0 && sortCol < COLS.length) {
+    clientes.sort((a,b)=>{
+      const va=COLS[sortCol].fn(a), vb=COLS[sortCol].fn(b);
+      if (typeof va === 'number') return (va-vb)*sortDir;
+      return va.toString().localeCompare(vb.toString())*sortDir;
+    });
+  }
+
+  const thead = COLS.map((c,i)=>{
+    let cls = '';
+    if (sortCol===i) cls = sortDir===1?'sort-asc':'sort-desc';
+    return `<th class="${cls}" onclick="renderAnalitico(${i},${sortCol===i?-sortDir:1})">${c.label}</th>`;
+  }).join('');
+
+  const tbody = clientes.map(c=>{
+    const sem = semaforo(c.diasSinPedir);
+    const n1  = c.nombre.split(' ')[0];
+    const msg = c.diasSinPedir>35
+      ? encodeURIComponent(`Hola ${n1}, cómo estás? Hace un tiempo que no tenemos noticias tuyas y quería escribirte para ver si precisabas mercadería. Quedamos a disposición. Saludos, Gonzi`)
+      : encodeURIComponent(`Hola ${n1}, cómo estás? Buenos días. Estamos organizando los pedidos de esta semana y quería saber si precisabas mercadería. Quedo atento de este lado. Saludos, Gonzi`);
+    const tel   = normTel(c.telefono);
+    const urlWA = tel ? `https://wa.me/${tel}?text=${msg}` : `https://wa.me/${WA_NUM}?text=${msg}`;
+    const mesCeldas = meses8.map(m=>{
+      const v=Math.round(c.cajasPorMes[m]||0);
+      return `<td class="${v>0?'td-val':'td-cero'}">${v>0?v:'--'}</td>`;
+    }).join('');
+    return `<tr>
+      <td>${c.nombre}</td>
+      ${mesCeldas}
+      <td><strong>${c.totalCajas}</strong></td>
+      <td>${c.nPedidos}</td>
+      <td>${c.promCajas}</td>
+      <td>${pf(c.promMonto)}</td>
+      <td>${pf(c.totalGA)}</td>
+      <td>${c.frecDias>0?'c/'+c.frecDias+'d':'--'}</td>
+      <td style="font-size:11px;color:var(--gris)">${c.ultimoPedido}</td>
+      <td><span class="sem ${sem.clase}">${sem.icono} ${c.diasSinPedir}d</span></td>
+      <td><button class="btn-wa" onclick="window.open('${urlWA}','_blank')">📱</button></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tab-analitico').innerHTML=`
+    <div class="seccion">
+      <div class="seccion-titulo">👥 Evolutivo por cliente -- Cajas (últimos 8 meses) · Tocá el título para ordenar</div>
+      <div class="tabla-wrap">
+        <table>
+          <thead><tr>${thead}<th></th></tr></thead>
+          <tbody>${tbody}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ══ TAB MOBILE ══
+function renderMobile() {
+  const opts = D.meses.slice().reverse().map(m=>
+    `<option value="${m}" ${m===MES_SEL?'selected':''}>${fml(m)}</option>`).join('');
+  actualizarMobile();
+  document.getElementById('tab-mobile').innerHTML = `
+    <div class="filtro-mes" style="justify-content:center">
+      <label>Mes:</label>
+      <select id="mobile-mes-sel" onchange="actualizarMobile(this.value)">${opts}</select>
+    </div>
+    <div class="mobile-mes" id="mobile-mes-label">${fml(MES_SEL)}</div>
+    <div class="mobile-grid" id="mobile-cards"></div>`;
+  actualizarMobile(MES_SEL);
+}
+
+function actualizarMobile(mes) {
+  if (mes) MES_SEL = mes;
+  const idx  = D.meses.indexOf(MES_SEL);
+  const idxA = idx > 0 ? idx-1 : -1;
+  const fact  = D.facturado[idx]||0,    gan   = D.ganancia[idx]||0;
+  const cajas = D.cajasPorMes[idx]||0,  peds  = D.pedidosPorMes[idx]||0;
+  const fA=idxA>=0?D.facturado[idxA]:null, gA=idxA>=0?D.ganancia[idxA]:null;
+  const cA=idxA>=0?D.cajasPorMes[idxA]:null, pA=idxA>=0?D.pedidosPorMes[idxA]:null;
+  const pctGA = fact > 0 ? Math.round((gan/fact)*100) : 0;
+  const ticketProm = peds > 0 ? Math.round(fact/peds) : 0;
+
+  const cards = [
+    {label:'💰 Facturado',    valor:pf(fact),      comp:cmp(fact,fA),   color:''},
+    {label:'📈 Ganancia',     valor:pf(gan),       comp:cmp(gan,gA),    color:'verde'},
+    {label:'📦 Cajas',        valor:cajas,         comp:cmp(cajas,cA),  color:''},
+    {label:'🧾 Pedidos',      valor:peds,          comp:cmp(peds,pA),   color:''},
+    {label:'📊 % GA',         valor:pctGA+'%',     comp:{texto:'sobre facturado',clase:''}, color:'amarillo'},
+    {label:'🎯 Ticket prom.', valor:pf(ticketProm),comp:{texto:'por pedido',clase:''},     color:''},
+  ].map(c=>`
+    <div class="mobile-card ${c.color}">
+      <div class="mobile-card-label">${c.label}</div>
+      <div class="mobile-card-valor">${c.valor}</div>
+      <div class="mobile-card-comp ${c.comp.clase}">${c.comp.texto}</div>
+    </div>`).join('');
+
+  const label = document.getElementById('mobile-mes-label');
+  if (label) label.textContent = fml(MES_SEL);
+  const cont = document.getElementById('mobile-cards');
+  if (cont) cont.innerHTML = cards;
+
+  // Si el tab mobile está activo, re-renderizar el select también
+  const sel = document.getElementById('mobile-mes-sel');
+  if (sel) sel.value = MES_SEL;
+}
+
+// ══ HELPERS ══
+function kpi(l,v,c){return `<div class="kpi"><div class="kpi-label">${l}</div><div class="kpi-valor">${v}</div><div class="kpi-comp ${c.clase}">${c.texto}</div></div>`;}
+function cmp(a,b){
+  if(b===null||b===undefined)return{texto:'--',clase:''};
+  if(b===0)return{texto:'Sin dato mes ant.',clase:''};
+  const p=Math.round(((a-b)/b)*100);
+  return{texto:`${p>=0?'▲':'▼'} ${Math.abs(p)}% vs mes ant.`,clase:p>=0?'sube':'baja'};
+}
+function semaforo(d){if(d<=20)return{clase:'verde',icono:'●'};if(d<=35)return{clase:'amarillo',icono:'●'};return{clase:'rojo',icono:'●'};}
+function pf(n){if(!n)return '$0';return '$'+Math.round(n).toLocaleString('es-AR');}
+function pk(n){if(!n||n===0)return '';if(n>=1000000)return '$'+(n/1000000).toFixed(1)+'M';if(n>=1000)return '$'+Math.round(n/1000)+'k';return '$'+Math.round(n);}
+function fml(m){if(!m)return '';const ms=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];const p=m.split(' ');return `${ms[parseInt(p[1])]} ${p[0]}`;}
+function normTel(t){if(!t)return null;let n=t.toString().replace(/\D/g,'');if(n.startsWith('549'))return n;if(n.startsWith('54'))return n;if(n.startsWith('0'))return '54'+n.slice(1);return '549'+n;}
+</script>
+</body>
+</html>
