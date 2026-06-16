@@ -65,6 +65,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 .spinner{width:36px;height:36px;border:3px solid var(--gris-borde);border-top-color:var(--azul);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .error-msg{background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radio);padding:16px;text-align:center;color:var(--rojo);font-size:14px;margin:20px 0;}
+.cat-titulo{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:6px 12px;border-radius:20px;margin:18px 0 10px;display:inline-block;}
+.cat-bolsas{background:#fef9c3;color:#854d0e;}
+.cat-pomos-grandes{background:#dcfce7;color:#166534;}
+.cat-pomos-chicos{background:#dbeafe;color:#1e40af;}
+.cat-individuales{background:#fed7aa;color:#9a3412;}
+.cat-extra{background:#f1f5f9;color:#475569;}
+.producto-card.bolsas{border-left:3px solid #eab308;}
+.producto-card.pomos-grandes{border-left:3px solid #22c55e;}
+.producto-card.pomos-chicos{border-left:3px solid #3b82f6;}
+.producto-card.individuales{border-left:3px solid #f97316;}
+.producto-card.extra{border-left:3px solid #94a3b8;}
+.resumen-cajas{font-size:12px;color:rgba(255,255,255,.7);margin-top:6px;text-align:right;}
 </style>
 </head>
 <body>
@@ -191,25 +203,66 @@ window.onload = async function() {
   }
 };
 
+function getCategoria(nombre) {
+  var n = nombre.toUpperCase();
+  if (n.indexOf('BOLSA') >= 0) return {key:'bolsas', label:'Bolsas', cls:'cat-bolsas'};
+  if (n.indexOf('198') >= 0) return {key:'individuales', label:'Individuales', cls:'cat-individuales'};
+  if (n.indexOf('POMO') >= 0) {
+    var m = n.match(/POMO X (\d+)/);
+    if (m) {
+      var tam = parseInt(m[1]);
+      if (tam >= 460) return {key:'pomos-grandes', label:'Pomos grandes', cls:'cat-pomos-grandes'};
+      return {key:'pomos-chicos', label:'Pomos chicos', cls:'cat-pomos-chicos'};
+    }
+    return {key:'pomos-grandes', label:'Pomos grandes', cls:'cat-pomos-grandes'};
+  }
+  return {key:'extra', label:'Extra', cls:'cat-extra'};
+}
+
 function renderProductos() {
+  var ORDEN_CATS = ['bolsas','pomos-grandes','pomos-chicos','individuales','extra'];
+  var LABELS = {
+    'bolsas':        {label:'Bolsas', cls:'cat-bolsas'},
+    'pomos-grandes': {label:'Pomos grandes', cls:'cat-pomos-grandes'},
+    'pomos-chicos':  {label:'Pomos chicos', cls:'cat-pomos-chicos'},
+    'individuales':  {label:'Individuales', cls:'cat-individuales'},
+    'extra':         {label:'Extra', cls:'cat-extra'}
+  };
+
+  // Agrupar por categoría
+  var grupos = {};
+  for (var i = 0; i < productos.length; i++) {
+    var cat = getCategoria(productos[i].nombre);
+    if (!grupos[cat.key]) grupos[cat.key] = [];
+    grupos[cat.key].push(i);
+  }
+
   var html = '<div class="seccion-titulo">Selecciona los productos</div>';
 
-  for (var i = 0; i < productos.length; i++) {
-    var p    = productos[i];
-    var cant = cantidades[i] || 0;
-    var sub  = cant > 0 ? formatPeso(p.precio * cant) : '';
-    html += '<div class="producto-card ' + (cant > 0 ? 'activo' : '') + '" id="card-' + i + '">' +
-      '<div class="prod-info">' +
-        '<div class="prod-nombre">' + p.nombre + '</div>' +
-        '<div class="prod-precio">Precio unitario: <span>' + formatPeso(p.precio) + '</span></div>' +
-      '</div>' +
-      '<div class="contador">' +
-        '<button class="btn-cnt menos" onclick="cambiarCant(' + i + ',-1)">-</button>' +
-        '<span class="cantidad-val" id="cant-' + i + '">' + cant + '</span>' +
-        '<button class="btn-cnt mas" onclick="cambiarCant(' + i + ',1)">+</button>' +
-      '</div>' +
-      '<div class="prod-subtotal" id="sub-' + i + '">' + sub + '</div>' +
-    '</div>';
+  for (var c = 0; c < ORDEN_CATS.length; c++) {
+    var catKey = ORDEN_CATS[c];
+    if (!grupos[catKey] || grupos[catKey].length === 0) continue;
+    var catInfo = LABELS[catKey];
+    html += '<div><span class="cat-titulo ' + catInfo.cls + '">' + catInfo.label + '</span></div>';
+
+    for (var x = 0; x < grupos[catKey].length; x++) {
+      var i    = grupos[catKey][x];
+      var p    = productos[i];
+      var cant = cantidades[i] || 0;
+      var sub  = cant > 0 ? formatPeso(p.precio * cant) : '';
+      html += '<div class="producto-card ' + catKey + (cant > 0 ? ' activo' : '') + '" id="card-' + i + '">' +
+        '<div class="prod-info">' +
+          '<div class="prod-nombre">' + p.nombre + '</div>' +
+          '<div class="prod-precio">Precio x caja: <span>' + formatPeso(p.precio) + '</span></div>' +
+        '</div>' +
+        '<div class="contador">' +
+          '<button class="btn-cnt menos" onclick="cambiarCant(' + i + ',-1)">-</button>' +
+          '<span class="cantidad-val" id="cant-' + i + '">' + cant + '</span>' +
+          '<button class="btn-cnt mas" onclick="cambiarCant(' + i + ',1)">+</button>' +
+        '</div>' +
+        '<div class="prod-subtotal" id="sub-' + i + '">' + sub + '</div>' +
+      '</div>';
+    }
   }
 
   html += '<div id="resumen-wrap"></div>';
@@ -240,10 +293,14 @@ function renderResumen() {
       '<span>' + formatPeso(productos[i].precio * cant) + '</span>' +
     '</div>';
   }
+  var totalCajas = 0;
+  for (var k = 0; k < productos.length; k++) totalCajas += (cantidades[k] || 0);
   html += '<div class="resumen-total">' +
     '<span class="resumen-total-label">Total</span>' +
     '<span class="resumen-total-monto">' + formatPeso(total) + '</span>' +
-  '</div></div>';
+  '</div>' +
+  '<div class="resumen-cajas">' + totalCajas + ' caja' + (totalCajas !== 1 ? 's' : '') + ' en total</div>' +
+  '</div>';
   return html;
 }
 
