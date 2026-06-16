@@ -95,6 +95,14 @@ let cliente   = null;
 let productos = [];
 let cantidades = {};
 
+async function leerHojaRaw(nombre) {
+  var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(nombre) + '&headers=0';
+  var r   = await fetch(url);
+  var txt = await r.text();
+  var json = JSON.parse(txt.substring(47, txt.length - 2));
+  return json.table;
+}
+
 async function leerHoja(nombre) {
   const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(nombre) + '&headers=1';
   const r   = await fetch(url);
@@ -147,17 +155,22 @@ window.onload = async function() {
     };
 
     // Leer lista de precios
-    var tablaProductos = await leerHoja('PRODUCTOS');
+    var tablaProductos = await leerHojaRaw('PRODUCTOS');
     var filasProductos = tablaAFilas(tablaProductos);
 
     productos = [];
     for (var j = 0; j < filasProductos.length; j++) {
       var fila = filasProductos[j];
-      var nombre = fila[1] ? fila[1].toString().trim() : ''; // col B = index 1
-      var precio = parseFloat(fila[3]) || 0;                 // col D = index 3
+      // col B (index 1) = nombre, col D (index 3) = precio x caja
+      var nombreRaw = fila[1];
+      var precioRaw = fila[3];
+      if (!nombreRaw || nombreRaw === '' || nombreRaw === null) continue;
+      var nombre = nombreRaw.toString().trim();
+      var precio  = parseFloat(precioRaw) || 0;
       if (!nombre || precio <= 0) continue;
       if (nombre.toUpperCase().indexOf('LISTA') >= 0) continue;
-      if (nombre.toString() === '#N/A') continue;
+      if (nombre.toUpperCase().indexOf('VENTA') >= 0) continue;
+      if (nombre === '#N/A') continue;
       productos.push({ nombre: nombre, precio: precio });
     }
 
