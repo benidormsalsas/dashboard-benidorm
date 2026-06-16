@@ -153,10 +153,11 @@ window.onload = async function() {
     productos = [];
     for (var j = 0; j < filasProductos.length; j++) {
       var fila = filasProductos[j];
-      var nombre = fila[0] ? fila[0].toString().trim() : '';
-      var precio = parseFloat(fila[3]) || 0; // col D (index 3) = precio venta
+      var nombre = fila[1] ? fila[1].toString().trim() : ''; // col B = index 1
+      var precio = parseFloat(fila[3]) || 0;                 // col D = index 3
       if (!nombre || precio <= 0) continue;
-      if (nombre.toUpperCase().startsWith('LISTA') || nombre.toUpperCase().startsWith('PRODUCTO')) continue;
+      if (nombre.toUpperCase().indexOf('LISTA') >= 0) continue;
+      if (nombre.toString() === '#N/A') continue;
       productos.push({ nombre: nombre, precio: precio });
     }
 
