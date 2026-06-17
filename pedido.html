@@ -102,6 +102,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 <script>
 const SHEET_ID = '1h8KpIRKx75h4CMHNIvL5vye4LQ_O_ReyisIZOrpass0';
 const WA_NUM   = '5491134165086';
+const WA_FABRICA = '5491136104863';
 
 let cliente   = null;
 let productos = [];
@@ -138,33 +139,31 @@ window.onload = async function() {
   var params    = new URLSearchParams(window.location.search);
   var idCliente = params.get('c');
 
-  if (!idCliente) {
-    mostrarError('Link invalido. Pedile a Benidorm que te reenvie tu link personal.');
-    return;
-  }
-
   try {
-    var tablaClientes = await leerHoja('CLIENTES');
-    var filasClientes = tablaAFilas(tablaClientes);
-
-    // Buscar cliente por ID (col B = index 1)
-    var clienteRow = null;
-    for (var i = 0; i < filasClientes.length; i++) {
-      if (filasClientes[i][1] && filasClientes[i][1].toString() === idCliente.toString()) {
-        clienteRow = filasClientes[i];
-        break;
+    if (idCliente) {
+      // Cliente registrado — buscar en CLIENTES
+      var tablaClientes = await leerHoja('CLIENTES');
+      var filasClientes = tablaAFilas(tablaClientes);
+      var clienteRow = null;
+      for (var i = 0; i < filasClientes.length; i++) {
+        if (filasClientes[i][1] && filasClientes[i][1].toString() === idCliente.toString()) {
+          clienteRow = filasClientes[i];
+          break;
+        }
       }
+      if (!clienteRow) {
+        mostrarError('Cliente no encontrado. Pedile a Benidorm tu link actualizado.');
+        return;
+      }
+      cliente = {
+        nombre:    clienteRow[0] ? clienteRow[0].toString() : '',
+        provincia: clienteRow[5] ? clienteRow[5].toString() : '',
+        registrado: true,
+      };
+    } else {
+      // Modo cotizador libre — mostrar campo de nombre
+      cliente = { nombre: '', provincia: '', registrado: false };
     }
-
-    if (!clienteRow) {
-      mostrarError('Cliente no encontrado. Pedile a Benidorm tu link actualizado.');
-      return;
-    }
-
-    cliente = {
-      nombre:    clienteRow[0] ? clienteRow[0].toString() : '',
-      provincia: clienteRow[5] ? clienteRow[5].toString() : '',
-    };
 
     // Leer lista de precios
     var tablaProductos = await leerHojaRaw('PRODUCTOS');
@@ -191,12 +190,25 @@ window.onload = async function() {
       return;
     }
 
-    // Mostrar saludo
-    document.getElementById('saludo-wrap').innerHTML =
-      '<div class="saludo">Hola, <strong>' + cliente.nombre + '</strong>! Arma tu pedido abajo.</div>';
-
-    renderProductos();
-    document.getElementById('btn-wrap').style.display = 'block';
+    // Mostrar saludo o campo de nombre
+    if (cliente.registrado) {
+      document.getElementById('saludo-wrap').innerHTML =
+        '<div class="saludo">Hola, <strong>' + cliente.nombre + '</strong>! Arma tu pedido abajo.</div>';
+      renderProductos();
+      document.getElementById('btn-wrap').style.display = 'block';
+    } else {
+      document.getElementById('saludo-wrap').innerHTML =
+        '<div class="saludo" style="padding:16px 24px">' +
+          '<div style="font-size:13px;color:#fff;margin-bottom:10px">Ingresa tu nombre para continuar:</div>' +
+          '<div style="display:flex;gap:8px;max-width:400px;margin:0 auto">' +
+            '<input id="nombre-input" type="text" placeholder="Tu nombre y empresa" ' +
+              'style="flex:1;padding:10px 14px;border-radius:8px;border:none;font-size:14px;outline:none" />' +
+            '<button onclick="confirmarNombre()" ' +
+              'style="background:#e8d88a;color:#1a1a2e;border:none;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:13px">Continuar</button>' +
+          '</div>' +
+        '</div>';
+      renderProductos();
+    }
 
   } catch(e) {
     mostrarError('Error al cargar los datos. Intentá de nuevo mas tarde.');
@@ -217,6 +229,16 @@ function getCategoria(nombre) {
     return {key:'pomos-grandes', label:'Pomos grandes', cls:'cat-pomos-grandes'};
   }
   return {key:'extra', label:'Extra', cls:'cat-extra'};
+}
+
+function confirmarNombre() {
+  var input = document.getElementById('nombre-input');
+  var nombre = input ? input.value.trim() : '';
+  if (!nombre) { input.style.border = '2px solid red'; return; }
+  cliente.nombre = nombre;
+  document.getElementById('saludo-wrap').innerHTML =
+    '<div class="saludo">Hola, <strong>' + nombre + '</strong>! Arma tu pedido abajo.</div>';
+  document.getElementById('btn-wrap').style.display = 'block';
 }
 
 function renderProductos() {
@@ -326,6 +348,9 @@ function confirmarPedido() {
   if (total === 0) return;
 
   var fecha = new Date().toLocaleDateString('es-AR');
+  var totalCajasMsg = 0;
+  for (var k = 0; k < productos.length; k++) totalCajasMsg += (cantidades[k] || 0);
+
   var msg = 'NUEVO PEDIDO - BENIDORM\n';
   msg += 'Fecha: ' + fecha + '\n';
   msg += 'Cliente: ' + cliente.nombre + '\n';
@@ -337,6 +362,7 @@ function confirmarPedido() {
     if (!cant) continue;
     msg += '- ' + productos[i].nombre + ': ' + cant + ' u. x ' + formatPeso(productos[i].precio) + ' = ' + formatPeso(productos[i].precio * cant) + '\n';
   }
+  msg += '\nTOTAL CAJAS: ' + totalCajasMsg;
   msg += '\nTOTAL: ' + formatPeso(total);
 
   window.open('https://wa.me/' + WA_NUM + '?text=' + encodeURIComponent(msg), '_blank');
