@@ -26,7 +26,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 .filtro-mes{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
 .filtro-mes label{font-size:12px;font-weight:600;color:var(--gris);font-family:'Montserrat',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
 .filtro-mes select{padding:7px 12px;border:2px solid var(--gris-borde);border-radius:8px;font-size:13px;color:var(--texto);background:#fff;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif;}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:18px;}
 .kpi{background:#fff;border-radius:var(--radio);padding:18px 20px;box-shadow:0 1px 4px rgba(34,73,122,.08);border-left:4px solid var(--azul);}
 .kpi-label{font-size:10px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;font-family:'Montserrat',sans-serif;font-weight:600;}
 .kpi-valor{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;color:var(--azul);line-height:1;}
@@ -106,13 +106,13 @@ tbody td:first-child{text-align:left;font-weight:500;}
 </div>
 <div class="contenido">
   <div class="tabs">
-    <div class="tab activo" onclick="mostrarTab('graficos')">📊 Gráficos</div>
+    <div class="tab activo" onclick="mostrarTab('mobile')">📱 KPIs</div>
+    <div class="tab" onclick="mostrarTab('graficos')">📊 Evolutivo</div>
     <div class="tab" onclick="mostrarTab('analitico')">📋 Analítico</div>
-    <div class="tab" onclick="mostrarTab('mobile')">📱 Mobile</div>
   </div>
-  <div id="tab-graficos"><div class="loading"><div class="spinner"></div><p>Cargando datos...</p></div></div>
+  <div id="tab-graficos" style="display:none"></div>
   <div id="tab-analitico" style="display:none"></div>
-  <div id="tab-mobile" style="display:none"></div>
+  <div id="tab-mobile"><div class="loading"><div class="spinner"></div><p>Cargando datos...</p></div></div>
 </div>
 
 <script>
@@ -146,12 +146,14 @@ function tablaAFilas(tabla) {
 
 window.onload = async function() {
   try {
-    const [tablaBase, tablaClientes] = await Promise.all([
+    const [tablaBase, tablaClientes, tablaCtaCte] = await Promise.all([
       leerHoja('BASE'),
-      leerHoja('CLIENTES')
+      leerHoja('CLIENTES'),
+      leerHoja('CTA CTE')
     ]);
     const filasBase     = tablaAFilas(tablaBase);
     const filasClientes = tablaAFilas(tablaClientes);
+    const filasCtaCte   = tablaAFilas(tablaCtaCte);
 
     const mapaClientes = {};
     for (const row of filasClientes) {
@@ -161,7 +163,15 @@ window.onload = async function() {
       };
     }
 
+    // Saldo actual: última fila con valor numérico en columna I (index 8)
+    let saldoActual = 0;
+    for (let i = filasCtaCte.length - 1; i >= 0; i--) {
+      const v = filasCtaCte[i][8];
+      if (typeof v === 'number') { saldoActual = v; break; }
+    }
+
     D = calcularDatos(filasBase, mapaClientes);
+    D.saldoCtaCte = saldoActual;
     MES_SEL = D.mesActual.mes;
     renderGraficos();
     renderAnalitico();
@@ -257,7 +267,7 @@ function calcularDatos(filas, mapaClientes) {
 
 function mostrarTab(t) {
   ['graficos','analitico','mobile'].forEach(id=>document.getElementById('tab-'+id).style.display=id===t?'':'none');
-  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('activo',['graficos','analitico','mobile'][i]===t));
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('activo',['mobile','graficos','analitico'][i]===t));
 }
 
 // ══ TAB GRÁFICOS ══
@@ -291,6 +301,7 @@ function renderGraficos() {
       ${kpi('📈 Ganancia',pf(gan),cmp(gan,gA))}
       ${kpi('📦 Cajas',cajas,cmp(cajas,cA))}
       ${kpi('🧾 Pedidos',peds,cmp(peds,pA))}
+      ${kpiSaldo(D.saldoCtaCte)}
     </div>
     <div class="seccion">
       <div class="seccion-titulo">📊 Evolución mensual</div>
@@ -402,6 +413,8 @@ function actualizarMobile(mes) {
   const cA=idxA>=0?D.cajasPorMes[idxA]:null, pA=idxA>=0?D.pedidosPorMes[idxA]:null;
   const pctGA = fact > 0 ? Math.round((gan/fact)*100) : 0;
   const ticketProm = peds > 0 ? Math.round(fact/peds) : 0;
+  const saldoF     = D.saldoCtaCte || 0;
+  const deboF      = saldoF < 0;
 
   const cards = [
     {label:'💰 Facturado',    valor:pf(fact),      comp:cmp(fact,fA),   color:''},
@@ -410,6 +423,7 @@ function actualizarMobile(mes) {
     {label:'🧾 Pedidos',      valor:peds,          comp:cmp(peds,pA),   color:''},
     {label:'📊 % GA',         valor:pctGA+'%',     comp:{texto:'sobre facturado',clase:''}, color:'amarillo'},
     {label:'🎯 Ticket prom.', valor:pf(ticketProm),comp:{texto:'por pedido',clase:''},     color:''},
+    {label:'💵 Saldo fábrica',valor:pf(Math.abs(saldoF)),comp:{texto:deboF?'Le debés':'A tu favor',clase:deboF?'baja':'sube'}, color:deboF?'rojo':'verde'},
   ].map(c=>`
     <div class="mobile-card ${c.color}">
       <div class="mobile-card-label">${c.label}</div>
@@ -429,6 +443,17 @@ function actualizarMobile(mes) {
 
 // ══ HELPERS ══
 function kpi(l,v,c){return `<div class="kpi"><div class="kpi-label">${l}</div><div class="kpi-valor">${v}</div><div class="kpi-comp ${c.clase}">${c.texto}</div></div>`;}
+function kpiSaldo(saldo){
+  saldo = saldo || 0;
+  var debo = saldo < 0;
+  var color = debo ? 'var(--rojo)' : 'var(--verde-ok)';
+  var texto = debo ? 'Le debés a fábrica' : 'A tu favor';
+  return `<div class="kpi" style="border-left-color:${color}">
+    <div class="kpi-label">💰 Saldo fábrica</div>
+    <div class="kpi-valor" style="color:${color}">${pf(Math.abs(saldo))}</div>
+    <div class="kpi-comp" style="color:${color};font-weight:600">${texto}</div>
+  </div>`;
+}
 function cmp(a,b){
   if(b===null||b===undefined)return{texto:'--',clase:''};
   if(b===0)return{texto:'Sin dato mes ant.',clase:''};
