@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -47,20 +48,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 .barra.fact.activo{background:#1a5fa8;}
 .barra.gan{background:var(--rojo);opacity:.7;}
 .barra.gan.activo{opacity:1;}
+.barra.cajas{background:#d4a514;opacity:.75;}
+.barra.cajas.activo{opacity:1;}
 .barra-monto{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;white-space:nowrap;color:var(--texto);}
 .barra-label{font-size:9px;color:var(--gris);text-align:center;}
 .tabla-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
 thead tr{background:var(--azul);}
 thead th{padding:9px 11px;text-align:center;font-weight:600;font-size:10px;white-space:nowrap;color:#fff;font-family:'Montserrat',sans-serif;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;user-select:none;}
-thead th:first-child{text-align:left;}
+thead th:first-child{text-align:left;position:sticky;left:0;background:var(--azul);z-index:2;}
 thead th:hover{background:var(--azul-mid);}
 thead th.sort-asc::after{content:' ▲';font-size:9px;}
 thead th.sort-desc::after{content:' ▼';font-size:9px;}
 tbody tr{border-bottom:1px solid var(--gris-borde);transition:background .1s;}
 tbody tr:hover{background:var(--azul-claro);}
 tbody td{padding:8px 11px;text-align:center;white-space:nowrap;font-size:12px;}
-tbody td:first-child{text-align:left;font-weight:500;}
+tbody td:first-child{text-align:left;font-weight:500;position:sticky;left:0;background:#fff;z-index:1;}
+tbody tr:hover td:first-child{background:var(--azul-claro);}
 .td-val{color:var(--azul);font-weight:600;}
 .td-cero{color:#d1d5db;font-size:11px;}
 .fila-activa{background:var(--azul-claro)!important;font-weight:600;}
@@ -282,13 +286,15 @@ function renderGraficos() {
   const opts = D.meses.slice().reverse().map(m=>
     `<option value="${m}" ${m===MES_SEL?'selected':''}>${fml(m)}</option>`).join('');
 
-  const m12=D.meses.slice(-12), f12=D.facturado.slice(-12), g12=D.ganancia.slice(-12), maxV=Math.max(...f12,1);
+  const m12=D.meses.slice(-12), f12=D.facturado.slice(-12), g12=D.ganancia.slice(-12), c12=D.cajasPorMes.slice(-12);
+  const maxV=Math.max(...f12,1), maxC=Math.max(...c12,1);
   const barras=m12.map((m,i)=>{
-    const hF=Math.max(Math.round((f12[i]/maxV)*150),2), hG=Math.max(Math.round((g12[i]/maxV)*150),2), ac=m===MES_SEL?'activo':'';
+    const hF=Math.max(Math.round((f12[i]/maxV)*150),2), hG=Math.max(Math.round((g12[i]/maxV)*150),2), hC=Math.max(Math.round((c12[i]/maxC)*150),2), ac=m===MES_SEL?'activo':'';
     return `<div class="grupo-barra">
       <div class="barras-duo">
         <div class="barra fact ${ac}" style="height:${hF}px"><div class="barra-monto">${pk(f12[i])}</div></div>
         <div class="barra gan  ${ac}" style="height:${hG}px"><div class="barra-monto">${pk(g12[i])}</div></div>
+        <div class="barra cajas ${ac}" style="height:${hC}px"><div class="barra-monto">${c12[i]}</div></div>
       </div>
       <div class="barra-label">${m.split(' ')[1]}/${m.split(' ')[0].slice(2)}</div>
     </div>`;
@@ -301,13 +307,13 @@ function renderGraficos() {
       ${kpi('📈 Ganancia',pf(gan),cmp(gan,gA))}
       ${kpi('📦 Cajas',cajas,cmp(cajas,cA))}
       ${kpi('🧾 Pedidos',peds,cmp(peds,pA))}
-      ${kpiSaldo(D.saldoCtaCte)}
     </div>
     <div class="seccion">
       <div class="seccion-titulo">📊 Evolución mensual</div>
       <div class="leyenda">
         <div class="leyenda-item"><div class="leyenda-dot" style="background:var(--azul)"></div>Facturado</div>
         <div class="leyenda-item"><div class="leyenda-dot" style="background:var(--rojo)"></div>Ganancia</div>
+        <div class="leyenda-item"><div class="leyenda-dot" style="background:#d4a514"></div>Cajas</div>
       </div>
       <div class="grafico-wrap"><div class="grafico-barras">${barras}</div></div>
     </div>`;
