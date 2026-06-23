@@ -276,46 +276,46 @@ function mostrarTab(t) {
 
 // ══ TAB GRÁFICOS ══
 function renderGraficos() {
-  const idx  = D.meses.indexOf(MES_SEL);
-  const idxA = idx > 0 ? idx-1 : -1;
-  const fact  = D.facturado[idx]||0,    gan   = D.ganancia[idx]||0;
-  const cajas = D.cajasPorMes[idx]||0,  peds  = D.pedidosPorMes[idx]||0;
-  const fA=idxA>=0?D.facturado[idxA]:null, gA=idxA>=0?D.ganancia[idxA]:null;
-  const cA=idxA>=0?D.cajasPorMes[idxA]:null, pA=idxA>=0?D.pedidosPorMes[idxA]:null;
-
   const opts = D.meses.slice().reverse().map(m=>
     `<option value="${m}" ${m===MES_SEL?'selected':''}>${fml(m)}</option>`).join('');
 
-  const m12=D.meses.slice(-12), f12=D.facturado.slice(-12), g12=D.ganancia.slice(-12), c12=D.cajasPorMes.slice(-12);
-  const maxV=Math.max(...f12,1), maxC=Math.max(...c12,1);
-  const barras=m12.map((m,i)=>{
-    const hF=Math.max(Math.round((f12[i]/maxV)*150),2), hG=Math.max(Math.round((g12[i]/maxV)*150),2), hC=Math.max(Math.round((c12[i]/maxC)*150),2), ac=m===MES_SEL?'activo':'';
-    return `<div class="grupo-barra">
-      <div class="barras-duo">
-        <div class="barra fact ${ac}" style="height:${hF}px"><div class="barra-monto">${pk(f12[i])}</div></div>
-        <div class="barra gan  ${ac}" style="height:${hG}px"><div class="barra-monto">${pk(g12[i])}</div></div>
-        <div class="barra cajas ${ac}" style="height:${hC}px"><div class="barra-monto">${c12[i]}</div></div>
-      </div>
-      <div class="barra-label">${m.split(' ')[1]}/${m.split(' ')[0].slice(2)}</div>
-    </div>`;
+  // ── TABLA 1: Por mes (A1:E19 estilo) ──
+  let totFact=0, totPed=0, totCajas=0, totGA=0;
+  const filasMes = D.meses.map((m,i)=>{
+    const f=D.facturado[i]||0, p=D.pedidosPorMes[i]||0, c=D.cajasPorMes[i]||0, g=D.ganancia[i]||0;
+    totFact+=f; totPed+=p; totCajas+=c; totGA+=g;
+    const ac = m===D.mesActual.mes ? 'fila-activa' : '';
+    return `<tr class="${ac}"><td>${fml(m)}</td><td>${pf(f)}</td><td>${p}</td><td>${c}</td><td>${pf(g)}</td></tr>`;
+  }).join('');
+  const filaTotalMes = `<tr style="font-weight:700;border-top:2px solid var(--azul)"><td>Suma total</td><td>${pf(totFact)}</td><td>${totPed}</td><td>${totCajas}</td><td>${pf(totGA)}</td></tr>`;
+
+  // ── TABLA 2: Por cliente (G1:L44 estilo) ──
+  const clientesOrd = [...D.clientes].sort((a,b)=>b.totalMonto-a.totalMonto);
+  const filasCliente = clientesOrd.map(c=>{
+    return `<tr><td>${c.nombre}</td><td>${pf(c.totalMonto)}</td><td>${c.nPedidos}</td><td>${c.totalCajas}</td><td>${pf(c.promMonto)}</td><td>${pf(c.totalGA)}</td></tr>`;
   }).join('');
 
   document.getElementById('tab-graficos').innerHTML=`
     <div class="filtro-mes"><label>Mes:</label><select onchange="cambiarMes(this.value)">${opts}</select></div>
-    <div class="kpis">
-      ${kpi('💰 Facturado',pf(fact),cmp(fact,fA))}
-      ${kpi('📈 Ganancia',pf(gan),cmp(gan,gA))}
-      ${kpi('📦 Cajas',cajas,cmp(cajas,cA))}
-      ${kpi('🧾 Pedidos',peds,cmp(peds,pA))}
-    </div>
-    <div class="seccion">
-      <div class="seccion-titulo">📊 Evolución mensual</div>
-      <div class="leyenda">
-        <div class="leyenda-item"><div class="leyenda-dot" style="background:var(--azul)"></div>Facturado</div>
-        <div class="leyenda-item"><div class="leyenda-dot" style="background:var(--rojo)"></div>Ganancia</div>
-        <div class="leyenda-item"><div class="leyenda-dot" style="background:#d4a514"></div>Cajas</div>
+    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px;align-items:start">
+      <div class="seccion">
+        <div class="seccion-titulo">📅 Evolución por mes</div>
+        <div class="tabla-wrap">
+          <table>
+            <thead><tr><th>Mes</th><th>Facturado</th><th>Q Pedidos</th><th>Q Cajas</th><th>GA $</th></tr></thead>
+            <tbody>${filasMes}${filaTotalMes}</tbody>
+          </table>
+        </div>
       </div>
-      <div class="grafico-wrap"><div class="grafico-barras">${barras}</div></div>
+      <div class="seccion">
+        <div class="seccion-titulo">👥 Evolución por cliente</div>
+        <div class="tabla-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>$ Facturado</th><th>Q Pedidos</th><th>Q Cajas</th><th>Pedido Prom</th><th>GA</th></tr></thead>
+            <tbody>${filasCliente}</tbody>
+          </table>
+        </div>
+      </div>
     </div>`;
 }
 
