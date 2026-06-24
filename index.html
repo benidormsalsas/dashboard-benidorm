@@ -208,11 +208,12 @@ function calcularDatos(filas, mapaClientes) {
 
     mesesSet.add(mes);
     if (!porMes[mes]) porMes[mes] = { facturado:0, cajas:0, ganancia:0, remitos:new Set() };
-    if (!porCliente[cliente]) porCliente[cliente] = { cajasPorMes:{}, fechas:[], totalCajas:0, totalMonto:0, totalGA:0 };
+    if (!porCliente[cliente]) porCliente[cliente] = { cajasPorMes:{}, montoPorMes:{}, gaPorMes:{}, remitosPorMes:{}, fechas:[], totalCajas:0, totalMonto:0, totalGA:0 };
 
     // GA: todos los tipos
     porMes[mes].ganancia += ga;
     porCliente[cliente].totalGA = (porCliente[cliente].totalGA || 0) + ga;
+    porCliente[cliente].gaPorMes[mes] = (porCliente[cliente].gaPorMes[mes] || 0) + ga;
 
     if (tipo === 'PRODUCTO') {
       porMes[mes].facturado += monto;
@@ -221,6 +222,9 @@ function calcularDatos(filas, mapaClientes) {
       porCliente[cliente].cajasPorMes[mes] = (porCliente[cliente].cajasPorMes[mes]||0) + cantidad;
       porCliente[cliente].totalCajas += cantidad;
       porCliente[cliente].totalMonto  = (porCliente[cliente].totalMonto||0) + monto;
+      porCliente[cliente].montoPorMes[mes] = (porCliente[cliente].montoPorMes[mes]||0) + monto;
+      if (!porCliente[cliente].remitosPorMes[mes]) porCliente[cliente].remitosPorMes[mes] = new Set();
+      if (nRemito) porCliente[cliente].remitosPorMes[mes].add(nRemito);
       if (fecha) porCliente[cliente].fechas.push(fecha.toDateString());
     }
   }
@@ -251,8 +255,11 @@ function calcularDatos(filas, mapaClientes) {
     const promCajas = nPedidos > 0 ? Math.round(data.totalCajas/nPedidos) : 0;
     const promMonto = nPedidos > 0 ? Math.round(data.totalMonto/nPedidos) : 0;
     const cliInfo   = mapaClientes[nombre] || {};
+    const remitosPorMesCount = {};
+    for (const m in data.remitosPorMes) remitosPorMesCount[m] = data.remitosPorMes[m].size;
     return {
-      nombre, cajasPorMes:data.cajasPorMes,
+      nombre, cajasPorMes:data.cajasPorMes, montoPorMes:data.montoPorMes,
+      gaPorMes:data.gaPorMes, remitosPorMes:remitosPorMesCount,
       totalCajas:Math.round(data.totalCajas),
       totalMonto:Math.round(data.totalMonto||0),
       totalGA:Math.round(data.totalGA||0),
@@ -275,51 +282,111 @@ function mostrarTab(t) {
 }
 
 // ══ TAB GRÁFICOS ══
-function renderGraficos() {
-  const opts = D.meses.slice().reverse().map(m=>
-    `<option value="${m}" ${m===MES_SEL?'selected':''}>${fml(m)}</option>`).join('');
+let sortColMes = -1, sortDirMes = 1;
+let sortColCli2 = -1, sortDirCli2 = 1;
+let mesFiltro = null;
 
-  // ── TABLA 1: Por mes (A1:E19 estilo) ──
+function renderGraficos(colMes, dirMes, colCli, dirCli, mesClick) {
+  if (colMes !== undefined) { sortColMes = colMes; sortDirMes = dirMes; }
+  if (colCli !== undefined) { sortColCli2 = colCli; sortDirCli2 = dirCli; }
+  if (mesClick !== undefined) { mesFiltro = (mesFiltro === mesClick) ? null : mesClick; }
+
+  // ── TABLA 1: Por mes ──
   let totFact=0, totPed=0, totCajas=0, totGA=0;
-  const filasMes = D.meses.map((m,i)=>{
-    const f=D.facturado[i]||0, p=D.pedidosPorMes[i]||0, c=D.cajasPorMes[i]||0, g=D.ganancia[i]||0;
+  const COLS_MES = [
+    {label:'Mes',       fn:(m,i)=>m, num:false},
+    {label:'Facturado', fn:(m,i)=>D.facturado[i]||0, num:true},
+    {label:'Q Pedidos', fn:(m,i)=>D.pedidosPorMes[i]||0, num:true},
+    {label:'Q Cajas',   fn:(m,i)=>D.cajasPorMes[i]||0, num:true},
+    {label:'GA $',      fn:(m,i)=>D.ganancia[i]||0, num:true},
+  ];
+
+  let mesesIdx = D.meses.map((m,i)=>i);
+  if (sortColMes >= 0) {
+    mesesIdx.sort((ia,ib)=>{
+      const va=COLS_MES[sortColMes].fn(D.meses[ia],ia), vb=COLS_MES[sortColMes].fn(D.meses[ib],ib);
+      if (typeof va === 'number') return (va-vb)*sortDirMes;
+      return va.toString().localeCompare(vb.toString())*sortDirMes;
+    });
+  }
+
+  const filasMes = mesesIdx.map(i=>{
+    const m=D.meses[i], f=D.facturado[i]||0, p=D.pedidosPorMes[i]||0, c=D.cajasPorMes[i]||0, g=D.ganancia[i]||0;
     totFact+=f; totPed+=p; totCajas+=c; totGA+=g;
-    const ac = m===D.mesActual.mes ? 'fila-activa' : '';
-    return `<tr class="${ac}"><td>${fml(m)}</td><td>${pf(f)}</td><td>${p}</td><td>${c}</td><td>${pf(g)}</td></tr>`;
+    const ac = (mesFiltro===m) ? 'fila-activa' : '';
+    return `<tr class="${ac}" style="cursor:pointer" onclick="renderGraficos(undefined,undefined,undefined,undefined,'${m}')"><td>${fml(m)}</td><td>${pf(f)}</td><td>${p}</td><td>${c}</td><td>${pf(g)}</td></tr>`;
   }).join('');
   const filaTotalMes = `<tr style="font-weight:700;border-top:2px solid var(--azul)"><td>Suma total</td><td>${pf(totFact)}</td><td>${totPed}</td><td>${totCajas}</td><td>${pf(totGA)}</td></tr>`;
 
-  // ── TABLA 2: Por cliente (G1:L44 estilo) ──
-  const clientesOrd = [...D.clientes].sort((a,b)=>b.totalMonto-a.totalMonto);
-  const filasCliente = clientesOrd.map(c=>{
-    return `<tr><td>${c.nombre}</td><td>${pf(c.totalMonto)}</td><td>${c.nPedidos}</td><td>${c.totalCajas}</td><td>${pf(c.promMonto)}</td><td>${pf(c.totalGA)}</td></tr>`;
+  const theadMes = COLS_MES.map((c,i)=>{
+    let cls = sortColMes===i ? (sortDirMes===1?'sort-asc':'sort-desc') : '';
+    return `<th class="${cls}" onclick="renderGraficos(${i},${sortColMes===i?-sortDirMes:1})">${c.label}</th>`;
   }).join('');
 
+  // ── TABLA 2: Por cliente (filtrada por mes si hay selección) ──
+  const COLS_CLI = [
+    {label:'Cliente',     fn:c=>c.nombre, num:false},
+    {label:'$ Facturado', fn:c=>c._monto, num:true},
+    {label:'Q Pedidos',   fn:c=>c._pedidos, num:true},
+    {label:'Q Cajas',     fn:c=>c._cajas, num:true},
+    {label:'Pedido Prom', fn:c=>c._promMonto, num:true},
+    {label:'GA',          fn:c=>c._ga, num:true},
+  ];
+
+  let clientesCalc = D.clientes.map(c=>{
+    if (mesFiltro) {
+      const monto = c.montoPorMes[mesFiltro] || 0;
+      const cajas = c.cajasPorMes[mesFiltro] || 0;
+      const ga    = c.gaPorMes[mesFiltro] || 0;
+      const peds  = c.remitosPorMes[mesFiltro] || 0;
+      return { ...c, _monto:monto, _cajas:cajas, _ga:ga, _pedidos:peds, _promMonto: peds>0?Math.round(monto/peds):0 };
+    }
+    return { ...c, _monto:c.totalMonto, _cajas:c.totalCajas, _ga:c.totalGA, _pedidos:c.nPedidos, _promMonto:c.promMonto };
+  }).filter(c=>c._cajas>0 || !mesFiltro);
+
+  if (sortColCli2 >= 0) {
+    clientesCalc.sort((a,b)=>{
+      const va=COLS_CLI[sortColCli2].fn(a), vb=COLS_CLI[sortColCli2].fn(b);
+      if (typeof va === 'number') return (va-vb)*sortDirCli2;
+      return va.toString().localeCompare(vb.toString())*sortDirCli2;
+    });
+  } else {
+    clientesCalc.sort((a,b)=>b._monto-a._monto);
+  }
+
+  const filasCliente = clientesCalc.map(c=>{
+    return `<tr><td>${c.nombre}</td><td>${pf(c._monto)}</td><td>${c._pedidos}</td><td>${c._cajas}</td><td>${pf(c._promMonto)}</td><td>${pf(c._ga)}</td></tr>`;
+  }).join('');
+
+  const theadCli = COLS_CLI.map((c,i)=>{
+    let cls = sortColCli2===i ? (sortDirCli2===1?'sort-asc':'sort-desc') : '';
+    return `<th class="${cls}" onclick="renderGraficos(undefined,undefined,${i},${sortColCli2===i?-sortDirCli2:1})">${c.label}</th>`;
+  }).join('');
+
+  const tituloCli = mesFiltro ? `👥 Evolución por cliente — ${fml(mesFiltro)} (clic en el mes para ver todo)` : '👥 Evolución por cliente — Total histórico';
+
   document.getElementById('tab-graficos').innerHTML=`
-    <div class="filtro-mes"><label>Mes:</label><select onchange="cambiarMes(this.value)">${opts}</select></div>
     <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px;align-items:start">
       <div class="seccion">
-        <div class="seccion-titulo">📅 Evolución por mes</div>
+        <div class="seccion-titulo">📅 Evolución por mes · tocá una fila para filtrar</div>
         <div class="tabla-wrap">
           <table>
-            <thead><tr><th>Mes</th><th>Facturado</th><th>Q Pedidos</th><th>Q Cajas</th><th>GA $</th></tr></thead>
+            <thead><tr>${theadMes}</tr></thead>
             <tbody>${filasMes}${filaTotalMes}</tbody>
           </table>
         </div>
       </div>
       <div class="seccion">
-        <div class="seccion-titulo">👥 Evolución por cliente</div>
+        <div class="seccion-titulo">${tituloCli}</div>
         <div class="tabla-wrap">
           <table>
-            <thead><tr><th>Cliente</th><th>$ Facturado</th><th>Q Pedidos</th><th>Q Cajas</th><th>Pedido Prom</th><th>GA</th></tr></thead>
+            <thead><tr>${theadCli}</tr></thead>
             <tbody>${filasCliente}</tbody>
           </table>
         </div>
       </div>
     </div>`;
 }
-
-function cambiarMes(m){ MES_SEL=m; renderGraficos(); }
 
 // ══ TAB ANALÍTICO ══
 function renderAnalitico(col, dir) {
