@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -100,7 +101,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 </div>
 
 <script>
-const SHEET_ID = '1h8KpIRKx75h4CMHNIvL5vye4LQ_O_ReyisIZOrpass0';
+// Ya NO se lee la planilla directo (gviz). Todo pasa por el Apps Script,
+// que corre con permisos del dueño y solo devuelve lo necesario:
+// - productos: la lista completa (pública, sin problema)
+// - cliente por ?c=ID: solo el registro que matchea, nunca la lista completa de CLIENTES
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMP9SamRata22snqbsYt3ALCN7IKSMs1BJGbcuDbrvnoGhcgxGEu2HKxL5pnPNoEu0/exec';
+
 const WA_NUM   = '5491134165086';
 const WA_FABRICA = '5491136104863';
 
@@ -108,56 +114,23 @@ let cliente   = null;
 let productos = [];
 let cantidades = {};
 
-async function leerHojaRaw(nombre) {
-  var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(nombre) + '&headers=0';
-  var r   = await fetch(url);
-  var txt = await r.text();
-  var json = JSON.parse(txt.substring(47, txt.length - 2));
-  return json.table;
-}
-
-async function leerHoja(nombre) {
-  const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(nombre) + '&headers=1';
-  const r   = await fetch(url);
-  const txt = await r.text();
-  const json = JSON.parse(txt.substring(47, txt.length - 2));
-  return json.table;
-}
-
-function tablaAFilas(tabla) {
-  if (!tabla || !tabla.rows) return [];
-  return tabla.rows.map(function(row) {
-    return (tabla.cols || []).map(function(col, i) {
-      var c = row.c && row.c[i];
-      if (!c || c.v === null || c.v === undefined) return '';
-      return c.v;
-    });
-  });
-}
-
 window.onload = async function() {
   var params    = new URLSearchParams(window.location.search);
   var idCliente = params.get('c');
 
   try {
     if (idCliente) {
-      // Cliente registrado — buscar en CLIENTES
-      var tablaClientes = await leerHoja('CLIENTES');
-      var filasClientes = tablaAFilas(tablaClientes);
-      var clienteRow = null;
-      for (var i = 0; i < filasClientes.length; i++) {
-        if (filasClientes[i][1] && filasClientes[i][1].toString() === idCliente.toString()) {
-          clienteRow = filasClientes[i];
-          break;
-        }
-      }
-      if (!clienteRow) {
+      // Cliente registrado — le pedimos al script SOLO ese cliente, nunca la lista completa
+      var res = await fetch(APPS_SCRIPT_URL + '?c=' + encodeURIComponent(idCliente));
+      var data = await res.json();
+
+      if (!data.encontrado) {
         mostrarError('Cliente no encontrado. Pedile a Benidorm tu link actualizado.');
         return;
       }
       cliente = {
-        nombre:    clienteRow[0] ? clienteRow[0].toString() : '',
-        provincia: clienteRow[5] ? clienteRow[5].toString() : '',
+        nombre:    data.nombre || '',
+        provincia: data.provincia || '',
         registrado: true,
       };
     } else {
@@ -165,25 +138,13 @@ window.onload = async function() {
       cliente = { nombre: '', provincia: '', registrado: false };
     }
 
-    // Leer lista de precios
-    var tablaProductos = await leerHojaRaw('PRODUCTOS');
-    var filasProductos = tablaAFilas(tablaProductos);
+    // Leer lista de precios vía Apps Script
+    var resProd = await fetch(APPS_SCRIPT_URL + '?action=productos');
+    var listaProductos = await resProd.json();
 
-    productos = [];
-    for (var j = 0; j < filasProductos.length; j++) {
-      var fila = filasProductos[j];
-      // col B (index 1) = nombre, col D (index 3) = precio x caja
-      var nombreRaw = fila[1];
-      var precioRaw = fila[3];
-      if (!nombreRaw || nombreRaw === '' || nombreRaw === null) continue;
-      var nombre = nombreRaw.toString().trim();
-      var precio  = parseFloat(precioRaw) || 0;
-      if (!nombre || precio <= 0) continue;
-      if (nombre.toUpperCase().indexOf('LISTA') >= 0) continue;
-      if (nombre.toUpperCase().indexOf('VENTA') >= 0) continue;
-      if (nombre === '#N/A') continue;
-      productos.push({ nombre: nombre, precio: precio });
-    }
+    productos = (listaProductos || []).map(function(p) {
+      return { nombre: p.nombre, precio: parseFloat(p.precio) || 0 };
+    }).filter(function(p) { return p.nombre && p.precio > 0; });
 
     if (productos.length === 0) {
       mostrarError('No hay productos disponibles. Comunicate con Benidorm.');
