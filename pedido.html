@@ -56,4 +56,319 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 @keyframes spin{to{transform:rotate(360deg);}}
 .error-msg{background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radio);padding:16px;text-align:center;color:var(--rojo);font-size:14px;margin:20px 0;}
 .cat-titulo{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:6px 12px;border-radius:20px;margin:18px 0 10px;display:inline-block;}
-.cat-bolsas{
+.cat-bolsas{background:#fef9c3;color:#854d0e;}
+.cat-pomos-grandes{background:#dcfce7;color:#166534;}
+.cat-pomos-chicos{background:#dbeafe;color:#1e40af;}
+.cat-individuales{background:#fed7aa;color:#9a3412;}
+.cat-extra{background:#f1f5f9;color:#475569;}
+.producto-card.bolsas{border-left:3px solid #eab308;}
+.producto-card.pomos-grandes{border-left:3px solid #22c55e;}
+.producto-card.pomos-chicos{border-left:3px solid #3b82f6;}
+.producto-card.individuales{border-left:3px solid #f97316;}
+.producto-card.extra{border-left:3px solid #94a3b8;}
+.resumen-cajas{font-size:12px;color:rgba(255,255,255,.7);margin-top:6px;text-align:right;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-b">B</div>
+  <div class="header-title">Benidorm</div>
+  <div class="header-sub">Aderezos &amp; Salsas</div>
+</div>
+
+<div id="saludo-wrap"></div>
+
+<div class="contenido" id="contenido">
+  <div class="loading"><div class="spinner"></div><p>Cargando tu lista...</p></div>
+</div>
+
+<div class="btn-confirmar-wrap" id="btn-wrap" style="display:none">
+  <button class="btn-confirmar" id="btn-confirmar" disabled onclick="confirmarPedido()">
+    Seleccioná productos para continuar
+  </button>
+</div>
+
+<script>
+const SHEET_ID = '1h8KpIRKx75h4CMHNIvL5vye4LQ_O_ReyisIZOrpass0';
+const WA_NUM   = '5491134165086';
+const WA_FABRICA = '5491136104863';
+
+let cliente   = null;
+let productos = [];
+let cantidades = {};
+
+async function leerHojaRaw(nombre) {
+  var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(nombre) + '&headers=0';
+  var r   = await fetch(url);
+  var txt = await r.text();
+  var json = JSON.parse(txt.substring(47, txt.length - 2));
+  return json.table;
+}
+
+async function leerHoja(nombre) {
+  const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(nombre) + '&headers=1';
+  const r   = await fetch(url);
+  const txt = await r.text();
+  const json = JSON.parse(txt.substring(47, txt.length - 2));
+  return json.table;
+}
+
+function tablaAFilas(tabla) {
+  if (!tabla || !tabla.rows) return [];
+  return tabla.rows.map(function(row) {
+    return (tabla.cols || []).map(function(col, i) {
+      var c = row.c && row.c[i];
+      if (!c || c.v === null || c.v === undefined) return '';
+      return c.v;
+    });
+  });
+}
+
+window.onload = async function() {
+  var params    = new URLSearchParams(window.location.search);
+  var idCliente = params.get('c');
+
+  try {
+    if (idCliente) {
+      var tablaClientes = await leerHoja('CLIENTES');
+      var filasClientes = tablaAFilas(tablaClientes);
+      var clienteRow = null;
+      for (var i = 0; i < filasClientes.length; i++) {
+        if (filasClientes[i][1] && filasClientes[i][1].toString() === idCliente.toString()) {
+          clienteRow = filasClientes[i];
+          break;
+        }
+      }
+      if (!clienteRow) {
+        mostrarError('Cliente no encontrado. Pedile a Benidorm tu link actualizado.');
+        return;
+      }
+      cliente = {
+        nombre:    clienteRow[0] ? clienteRow[0].toString() : '',
+        provincia: clienteRow[5] ? clienteRow[5].toString() : '',
+        registrado: true,
+      };
+    } else {
+      cliente = { nombre: '', provincia: '', registrado: false };
+    }
+
+    var tablaProductos = await leerHojaRaw('PRODUCTOS');
+    var filasProductos = tablaAFilas(tablaProductos);
+
+    productos = [];
+    for (var j = 0; j < filasProductos.length; j++) {
+      var fila = filasProductos[j];
+      var nombreRaw = fila[1];
+      var precioRaw = fila[3];
+      if (!nombreRaw || nombreRaw === '' || nombreRaw === null) continue;
+      var nombre = nombreRaw.toString().trim();
+      var precio  = parseFloat(precioRaw) || 0;
+      if (!nombre || precio <= 0) continue;
+      if (nombre.toUpperCase().indexOf('LISTA') >= 0) continue;
+      if (nombre.toUpperCase().indexOf('VENTA') >= 0) continue;
+      if (nombre === '#N/A') continue;
+      productos.push({ nombre: nombre, precio: precio });
+    }
+
+    if (productos.length === 0) {
+      mostrarError('No hay productos disponibles. Comunicate con Benidorm.');
+      return;
+    }
+
+    if (cliente.registrado) {
+      document.getElementById('saludo-wrap').innerHTML =
+        '<div class="saludo">Hola, <strong>' + cliente.nombre + '</strong>! Arma tu pedido abajo.</div>';
+      renderProductos();
+      document.getElementById('btn-wrap').style.display = 'block';
+    } else {
+      document.getElementById('saludo-wrap').innerHTML =
+        '<div class="saludo" style="padding:16px 24px">' +
+          '<div style="font-size:13px;color:#fff;margin-bottom:10px">Ingresa tu nombre para continuar:</div>' +
+          '<div style="display:flex;gap:8px;max-width:400px;margin:0 auto">' +
+            '<input id="nombre-input" type="text" placeholder="Tu nombre y empresa" ' +
+              'style="flex:1;padding:10px 14px;border-radius:8px;border:none;font-size:14px;outline:none" />' +
+            '<button onclick="confirmarNombre()" ' +
+              'style="background:#e8d88a;color:#1a1a2e;border:none;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:13px">Continuar</button>' +
+          '</div>' +
+        '</div>';
+      renderProductos();
+    }
+
+  } catch(e) {
+    mostrarError('Error al cargar los datos. Intentá de nuevo mas tarde.');
+  }
+};
+
+function getCategoria(nombre) {
+  var n = nombre.toUpperCase();
+  if (n.indexOf('BOLSA') >= 0) return {key:'bolsas', label:'Bolsas', cls:'cat-bolsas'};
+  if (n.indexOf('198') >= 0) return {key:'individuales', label:'Individuales', cls:'cat-individuales'};
+  if (n.indexOf('POMO') >= 0) {
+    var m = n.match(/POMO X (\d+)/);
+    if (m) {
+      var tam = parseInt(m[1]);
+      if (tam >= 460) return {key:'pomos-grandes', label:'Pomos grandes', cls:'cat-pomos-grandes'};
+      return {key:'pomos-chicos', label:'Pomos chicos', cls:'cat-pomos-chicos'};
+    }
+    return {key:'pomos-grandes', label:'Pomos grandes', cls:'cat-pomos-grandes'};
+  }
+  return {key:'extra', label:'Extra', cls:'cat-extra'};
+}
+
+function confirmarNombre() {
+  var input = document.getElementById('nombre-input');
+  var nombre = input ? input.value.trim() : '';
+  if (!nombre) { input.style.border = '2px solid red'; return; }
+  cliente.nombre = nombre;
+  document.getElementById('saludo-wrap').innerHTML =
+    '<div class="saludo">Hola, <strong>' + nombre + '</strong>! Arma tu pedido abajo.</div>';
+  document.getElementById('btn-wrap').style.display = 'block';
+}
+
+function renderProductos() {
+  var ORDEN_CATS = ['bolsas','pomos-grandes','pomos-chicos','individuales','extra'];
+  var LABELS = {
+    'bolsas':        {label:'Bolsas', cls:'cat-bolsas'},
+    'pomos-grandes': {label:'Pomos grandes', cls:'cat-pomos-grandes'},
+    'pomos-chicos':  {label:'Pomos chicos', cls:'cat-pomos-chicos'},
+    'individuales':  {label:'Individuales', cls:'cat-individuales'},
+    'extra':         {label:'Extra', cls:'cat-extra'}
+  };
+
+  var grupos = {};
+  for (var i = 0; i < productos.length; i++) {
+    var cat = getCategoria(productos[i].nombre);
+    if (!grupos[cat.key]) grupos[cat.key] = [];
+    grupos[cat.key].push(i);
+  }
+
+  var html = '<div class="seccion-titulo">Selecciona los productos</div>';
+
+  for (var c = 0; c < ORDEN_CATS.length; c++) {
+    var catKey = ORDEN_CATS[c];
+    if (!grupos[catKey] || grupos[catKey].length === 0) continue;
+    var catInfo = LABELS[catKey];
+    html += '<div><span class="cat-titulo ' + catInfo.cls + '">' + catInfo.label + '</span></div>';
+
+    for (var x = 0; x < grupos[catKey].length; x++) {
+      var i    = grupos[catKey][x];
+      var p    = productos[i];
+      var cant = cantidades[i] || 0;
+      var sub  = cant > 0 ? formatPeso(p.precio * cant) : '';
+      html += '<div class="producto-card ' + catKey + (cant > 0 ? ' activo' : '') + '" id="card-' + i + '">' +
+        '<div class="prod-info">' +
+          '<div class="prod-nombre">' + p.nombre + '</div>' +
+          '<div class="prod-precio">Precio x caja: <span>' + formatPeso(p.precio) + '</span></div>' +
+        '</div>' +
+        '<div class="contador">' +
+          '<button class="btn-cnt menos" onclick="cambiarCant(' + i + ',-1)">-</button>' +
+          '<span class="cantidad-val" id="cant-' + i + '">' + cant + '</span>' +
+          '<button class="btn-cnt mas" onclick="cambiarCant(' + i + ',1)">+</button>' +
+        '</div>' +
+        '<div class="prod-subtotal" id="sub-' + i + '">' + sub + '</div>' +
+      '</div>';
+    }
+  }
+
+  html += '<div id="resumen-wrap"></div>';
+  document.getElementById('contenido').innerHTML = html;
+  actualizarBoton();
+}
+
+function cambiarCant(i, delta) {
+  cantidades[i] = Math.max(0, (cantidades[i] || 0) + delta);
+  var cant = cantidades[i];
+  document.getElementById('cant-' + i).textContent = cant;
+  document.getElementById('sub-' + i).textContent = cant > 0 ? formatPeso(productos[i].precio * cant) : '';
+  document.getElementById('card-' + i).classList.toggle('activo', cant > 0);
+  document.getElementById('resumen-wrap').innerHTML = renderResumen();
+  actualizarBoton();
+}
+
+function renderResumen() {
+  var total = calcularTotal();
+  if (total === 0) return '<div class="vacio">Todavia no seleccionaste productos</div>';
+
+  var html = '<div class="resumen"><div class="resumen-titulo">Resumen del pedido</div>';
+  for (var i = 0; i < productos.length; i++) {
+    var cant = cantidades[i] || 0;
+    if (!cant) continue;
+    html += '<div class="resumen-linea">' +
+      '<span>' + productos[i].nombre + ' x ' + cant + '</span>' +
+      '<span>' + formatPeso(productos[i].precio * cant) + '</span>' +
+    '</div>';
+  }
+  var totalCajas = 0;
+  for (var k = 0; k < productos.length; k++) totalCajas += (cantidades[k] || 0);
+  html += '<div class="resumen-total">' +
+    '<span class="resumen-total-label">Total</span>' +
+    '<span class="resumen-total-monto">' + formatPeso(total) + '</span>' +
+  '</div>' +
+  '<div class="resumen-cajas">' + totalCajas + ' caja' + (totalCajas !== 1 ? 's' : '') + ' en total</div>' +
+  '</div>';
+  return html;
+}
+
+function calcularTotal() {
+  var total = 0;
+  for (var i = 0; i < productos.length; i++) {
+    total += productos[i].precio * (cantidades[i] || 0);
+  }
+  return total;
+}
+
+function actualizarBoton() {
+  var total = calcularTotal();
+  var btn   = document.getElementById('btn-confirmar');
+  btn.disabled = total === 0;
+  btn.textContent = total > 0
+    ? 'Confirmar pedido ' + formatPeso(total) + ' por WhatsApp'
+    : 'Selecciona productos para continuar';
+}
+
+function confirmarPedido() {
+  var total = calcularTotal();
+  if (total === 0) return;
+
+  var fecha = new Date().toLocaleDateString('es-AR');
+  var totalCajasMsg = 0;
+  for (var k = 0; k < productos.length; k++) totalCajasMsg += (cantidades[k] || 0);
+
+  var msg = 'NUEVO PEDIDO - BENIDORM\n';
+  msg += 'Fecha: ' + fecha + '\n';
+  msg += 'Cliente: ' + cliente.nombre + '\n';
+  if (cliente.provincia) msg += 'Provincia: ' + cliente.provincia + '\n';
+  msg += '\nDetalle:\n';
+
+  for (var i = 0; i < productos.length; i++) {
+    var cant = cantidades[i] || 0;
+    if (!cant) continue;
+    msg += '- ' + productos[i].nombre + ': ' + cant + ' u. x ' + formatPeso(productos[i].precio) + ' = ' + formatPeso(productos[i].precio * cant) + '\n';
+  }
+  msg += '\nTOTAL CAJAS: ' + totalCajasMsg;
+  msg += '\nTOTAL: ' + formatPeso(total);
+
+  window.open('https://wa.me/' + WA_NUM + '?text=' + encodeURIComponent(msg), '_blank');
+
+  document.getElementById('contenido').innerHTML =
+    '<div class="confirmado">' +
+      '<div class="icono">✅</div>' +
+      '<h2>Pedido enviado!</h2>' +
+      '<p>Tu pedido fue enviado por WhatsApp.<br>En breve nos ponemos en contacto para confirmarlo.<br><br>Gracias!</p>' +
+    '</div>';
+  document.getElementById('btn-wrap').style.display = 'none';
+  document.getElementById('saludo-wrap').innerHTML = '';
+}
+
+function mostrarError(msg) {
+  document.getElementById('contenido').innerHTML = '<div class="error-msg">' + msg + '</div>';
+}
+
+function formatPeso(n) {
+  if (!n) return '$0';
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+</script>
+</body>
+</html>
