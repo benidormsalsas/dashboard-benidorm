@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -301,7 +300,7 @@ function renderGraficos(colMes, dirMes, colCli, dirCli, mesClick) {
     {label:'GA $',      fn:(m,i)=>D.ganancia[i]||0, num:true},
   ];
 
-  let mesesIdx = D.meses.map((m,i)=>i);
+  let mesesIdx = D.meses.map((m,i)=>i).reverse(); // mes actual primero por defecto
   if (sortColMes >= 0) {
     mesesIdx.sort((ia,ib)=>{
       const va=COLS_MES[sortColMes].fn(D.meses[ia],ia), vb=COLS_MES[sortColMes].fn(D.meses[ib],ib);
@@ -434,12 +433,15 @@ function renderAnalitico(col, dir) {
       const v=Math.round(c.cajasPorMes[m]||0);
       return `<td class="${v>0?'td-val':'td-cero'}">${v>0?v:'--'}</td>`;
     }).join('');
+    // Promedio de cajas variable: desde el primer mes que pidió
+    const mesesConPedido = meses8.filter(m=>(c.cajasPorMes[m]||0)>0).length;
+    const promCajasVar = mesesConPedido > 0 ? Math.round(c.totalCajas / c.nPedidos) : '--';
     return `<tr>
       <td>${c.nombre}</td>
       ${mesCeldas}
       <td><strong>${c.totalCajas}</strong></td>
       <td>${c.nPedidos}</td>
-      <td>${c.promCajas}</td>
+      <td>${promCajasVar}</td>
       <td>${pf(c.promMonto)}</td>
       <td>${pf(c.totalGA)}</td>
       <td>${c.frecDias>0?'c/'+c.frecDias+'d':'--'}</td>
@@ -449,13 +451,25 @@ function renderAnalitico(col, dir) {
     </tr>`;
   }).join('');
 
+  // Fila de totales de cajas por mes
+  const totalesMesCeldas = meses8.map(m=>{
+    const tot = clientes.reduce((acc,c)=>acc+(Math.round(c.cajasPorMes[m]||0)),0);
+    return `<td style="font-weight:700;color:var(--azul)">${tot>0?tot:'--'}</td>`;
+  }).join('');
+  const filaTotales = `<tr style="background:var(--azul-claro);font-weight:700;border-top:2px solid var(--azul)">
+    <td style="font-weight:700;color:var(--azul)">TOTALES</td>
+    ${totalesMesCeldas}
+    <td style="font-weight:700;color:var(--azul)">${clientes.reduce((acc,c)=>acc+c.totalCajas,0)}</td>
+    <td colspan="7"></td>
+  </tr>`;
+
   document.getElementById('tab-analitico').innerHTML=`
     <div class="seccion">
       <div class="seccion-titulo">👥 Evolutivo por cliente -- Cajas (últimos 8 meses) · Tocá el título para ordenar</div>
       <div class="tabla-wrap">
         <table>
           <thead><tr>${thead}<th></th></tr></thead>
-          <tbody>${tbody}</tbody>
+          <tbody>${filaTotales}${tbody}</tbody>
         </table>
       </div>
     </div>`;
@@ -479,23 +493,27 @@ function renderMobile() {
 function actualizarMobile(mes) {
   if (mes) MES_SEL = mes;
   const idx  = D.meses.indexOf(MES_SEL);
-  const idxA = idx > 0 ? idx-1 : -1;
-  const fact  = D.facturado[idx]||0,    gan   = D.ganancia[idx]||0;
-  const cajas = D.cajasPorMes[idx]||0,  peds  = D.pedidosPorMes[idx]||0;
-  const fA=idxA>=0?D.facturado[idxA]:null, gA=idxA>=0?D.ganancia[idxA]:null;
-  const cA=idxA>=0?D.cajasPorMes[idxA]:null, pA=idxA>=0?D.pedidosPorMes[idxA]:null;
+  const fact  = D.facturado[idx]||0, gan = D.ganancia[idx]||0;
+  const cajas = D.cajasPorMes[idx]||0, peds = D.pedidosPorMes[idx]||0;
   const pctGA = fact > 0 ? Math.round((gan/fact)*100) : 0;
-  const ticketProm = peds > 0 ? Math.round(fact/peds) : 0;
-  const saldoF     = D.saldoCtaCte || 0;
-  const deboF      = saldoF < 0;
+  const saldoF = D.saldoCtaCte || 0;
+  const deboF  = saldoF < 0;
+
+  // Promedio de los 3 meses anteriores
+  const prom3 = (key) => {
+    const vals = [];
+    for (let i = idx-1; i >= 0 && vals.length < 3; i--) vals.push(D[key][i]||0);
+    return vals.length > 0 ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+  };
+  const fProm = prom3('facturado'), gProm = prom3('ganancia');
+  const cProm = prom3('cajasPorMes'), pProm = prom3('pedidosPorMes');
 
   const cards = [
-    {label:'💰 Facturado',    valor:pf(fact),      comp:cmp(fact,fA),   color:''},
-    {label:'📈 Ganancia',     valor:pf(gan),       comp:cmp(gan,gA),    color:'verde'},
-    {label:'📦 Cajas',        valor:cajas,         comp:cmp(cajas,cA),  color:''},
-    {label:'🧾 Pedidos',      valor:peds,          comp:cmp(peds,pA),   color:''},
-    {label:'📊 % GA',         valor:pctGA+'%',     comp:{texto:'sobre facturado',clase:''}, color:'amarillo'},
-    {label:'🎯 Ticket prom.', valor:pf(ticketProm),comp:{texto:'por pedido',clase:''},     color:''},
+    {label:'💰 Facturado',    valor:pf(fact),  comp:cmpProm(fact,fProm),  color:''},
+    {label:'📈 Ganancia',     valor:pf(gan),   comp:cmpProm(gan,gProm),   color:'verde'},
+    {label:'📦 Cajas',        valor:cajas,     comp:cmpProm(cajas,cProm), color:''},
+    {label:'🧾 Pedidos',      valor:peds,      comp:cmpProm(peds,pProm),  color:''},
+    {label:'📊 % GA',         valor:pctGA+'%', comp:{texto:'sobre facturado',clase:''}, color:'amarillo'},
     {label:'💵 Saldo fábrica',valor:pf(Math.abs(saldoF)),comp:{texto:deboF?'Le debés':'A tu favor',clase:deboF?'baja':'sube'}, color:deboF?'rojo':'verde'},
   ].map(c=>`
     <div class="mobile-card ${c.color}">
@@ -532,6 +550,12 @@ function cmp(a,b){
   if(b===0)return{texto:'Sin dato mes ant.',clase:''};
   const p=Math.round(((a-b)/b)*100);
   return{texto:`${p>=0?'▲':'▼'} ${Math.abs(p)}% vs mes ant.`,clase:p>=0?'sube':'baja'};
+}
+function cmpProm(a,b){
+  if(b===null||b===undefined)return{texto:'--',clase:''};
+  if(b===0)return{texto:'Sin dato prom.',clase:''};
+  const p=Math.round(((a-b)/b)*100);
+  return{texto:`${p>=0?'▲':'▼'} ${Math.abs(p)}% vs prom. 3m`,clase:p>=0?'sube':'baja'};
 }
 function semaforo(d){if(d<=20)return{clase:'verde',icono:'●'};if(d<=35)return{clase:'amarillo',icono:'●'};return{clase:'rojo',icono:'●'};}
 function pf(n){if(!n)return '$0';return '$'+Math.round(n).toLocaleString('es-AR');}
