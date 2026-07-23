@@ -99,22 +99,32 @@ let cliente   = null;
 let productos = [];
 let cantidades = {};
 
+function esperar(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
+}
+
+async function llamarAPI(body, intentos) {
+  intentos = intentos || 3;
+  var ultimoError = null;
+  for (var i = 0; i < intentos; i++) {
+    try {
+      var r = await fetch(API_URL, { method: 'POST', body: new URLSearchParams(body) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.json();
+    } catch (e) {
+      ultimoError = e;
+      if (i < intentos - 1) await esperar(800 * (i + 1));
+    }
+  }
+  throw ultimoError;
+}
+
 async function obtenerProductos() {
-  var r   = await fetch(API_URL, {
-    method: 'POST',
-    body: new URLSearchParams({ action: 'productos' })
-  });
-  var data = await r.json();
-  return data;
+  return await llamarAPI({ action: 'productos' });
 }
 
 async function obtenerCliente(id) {
-  var r   = await fetch(API_URL, {
-    method: 'POST',
-    body: new URLSearchParams({ c: id })
-  });
-  var data = await r.json();
-  return data;
+  return await llamarAPI({ c: id });
 }
 
 window.onload = async function() {
