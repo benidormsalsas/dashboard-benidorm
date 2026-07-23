@@ -91,7 +91,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 </div>
 
 <script>
-const API_URL  = 'https://script.google.com/macros/s/AKfycbzSUEghCfdBbv8Z1v84Ew9xnly8f6_8Ty3LdLPpXSiDrIv3OFaKyUWSTz94fQHJsCNC/exec';
+const API_URL  = 'https://script.google.com/macros/s/AKfycbzBHgo95jJE6CAinxgPa8ooExf4TKJg2VOvRmGDk25JgCX0mGRznGG-xRH9o3c--t1O/exec';
 const WA_NUM   = '5491134165086';
 const WA_FABRICA = '5491136104863';
 
@@ -100,13 +100,19 @@ let productos = [];
 let cantidades = {};
 
 async function obtenerProductos() {
-  var r   = await fetch(API_URL + '?action=productos');
+  var r   = await fetch(API_URL, {
+    method: 'POST',
+    body: new URLSearchParams({ action: 'productos' })
+  });
   var data = await r.json();
   return data;
 }
 
 async function obtenerCliente(id) {
-  var r   = await fetch(API_URL + '?c=' + encodeURIComponent(id));
+  var r   = await fetch(API_URL, {
+    method: 'POST',
+    body: new URLSearchParams({ c: id })
+  });
   var data = await r.json();
   return data;
 }
