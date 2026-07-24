@@ -91,7 +91,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 </div>
 
 <script>
-const SHEET_ID = '1h8KpIRKx75h4CMHNIvL5vye4LQ_O_ReyisIZOrpass0';
+const SHEET_ID = '1ewHT0GTdTKzgBFM9_0mo7okOf1kTF6gIYrMDaIphj0E';
 const WA_NUM   = '5491134165086';
 const WA_FABRICA = '5491136104863';
 
@@ -132,11 +132,11 @@ window.onload = async function() {
 
   try {
     if (idCliente) {
-      var tablaClientes = await leerHoja('CLIENTES');
+      var tablaClientes = await leerHoja('CLIENTES_PUB');
       var filasClientes = tablaAFilas(tablaClientes);
       var clienteRow = null;
       for (var i = 0; i < filasClientes.length; i++) {
-        if (filasClientes[i][1] && filasClientes[i][1].toString() === idCliente.toString()) {
+        if (filasClientes[i][0] && filasClientes[i][0].toString() === idCliente.toString()) {
           clienteRow = filasClientes[i];
           break;
         }
@@ -146,29 +146,23 @@ window.onload = async function() {
         return;
       }
       cliente = {
-        nombre:    clienteRow[0] ? clienteRow[0].toString() : '',
-        provincia: clienteRow[5] ? clienteRow[5].toString() : '',
+        nombre:    clienteRow[1] ? clienteRow[1].toString() : '',
+        provincia: clienteRow[2] ? clienteRow[2].toString() : '',
         registrado: true,
       };
     } else {
       cliente = { nombre: '', provincia: '', registrado: false };
     }
 
-    var tablaProductos = await leerHojaRaw('PRODUCTOS');
+    var tablaProductos = await leerHoja('PRODUCTOS_PUB');
     var filasProductos = tablaAFilas(tablaProductos);
 
     productos = [];
     for (var j = 0; j < filasProductos.length; j++) {
       var fila = filasProductos[j];
-      var nombreRaw = fila[1];
-      var precioRaw = fila[3];
-      if (!nombreRaw || nombreRaw === '' || nombreRaw === null) continue;
-      var nombre = nombreRaw.toString().trim();
-      var precio  = parseFloat(precioRaw) || 0;
+      var nombre = fila[0] ? fila[0].toString().trim() : '';
+      var precio = parseFloat(fila[1]) || 0;
       if (!nombre || precio <= 0) continue;
-      if (nombre.toUpperCase().indexOf('LISTA') >= 0) continue;
-      if (nombre.toUpperCase().indexOf('VENTA') >= 0) continue;
-      if (nombre === '#N/A') continue;
       productos.push({ nombre: nombre, precio: precio });
     }
 
