@@ -91,7 +91,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 </div>
 
 <script>
-const API_URL  = 'https://script.google.com/macros/s/AKfycbzBHgo95jJE6CAinxgPa8ooExf4TKJg2VOvRmGDk25JgCX0mGRznGG-xRH9o3c--t1O/exec';
+const SHEET_ID = '1h8KpIRKx75h4CMHNIvL5vye4LQ_O_ReyisIZOrpass0';
 const WA_NUM   = '5491134165086';
 const WA_FABRICA = '5491136104863';
 
@@ -99,32 +99,31 @@ let cliente   = null;
 let productos = [];
 let cantidades = {};
 
-function esperar(ms) {
-  return new Promise(function(resolve) { setTimeout(resolve, ms); });
+async function leerHojaRaw(nombre) {
+  var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(nombre) + '&headers=0';
+  var r   = await fetch(url);
+  var txt = await r.text();
+  var json = JSON.parse(txt.substring(47, txt.length - 2));
+  return json.table;
 }
 
-async function llamarAPI(body, intentos) {
-  intentos = intentos || 3;
-  var ultimoError = null;
-  for (var i = 0; i < intentos; i++) {
-    try {
-      var r = await fetch(API_URL, { method: 'POST', body: new URLSearchParams(body) });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return await r.json();
-    } catch (e) {
-      ultimoError = e;
-      if (i < intentos - 1) await esperar(800 * (i + 1));
-    }
-  }
-  throw ultimoError;
+async function leerHoja(nombre) {
+  const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(nombre) + '&headers=1';
+  const r   = await fetch(url);
+  const txt = await r.text();
+  const json = JSON.parse(txt.substring(47, txt.length - 2));
+  return json.table;
 }
 
-async function obtenerProductos() {
-  return await llamarAPI({ action: 'productos' });
-}
-
-async function obtenerCliente(id) {
-  return await llamarAPI({ c: id });
+function tablaAFilas(tabla) {
+  if (!tabla || !tabla.rows) return [];
+  return tabla.rows.map(function(row) {
+    return (tabla.cols || []).map(function(col, i) {
+      var c = row.c && row.c[i];
+      if (!c || c.v === null || c.v === undefined) return '';
+      return c.v;
+    });
+  });
 }
 
 window.onload = async function() {
@@ -133,23 +132,47 @@ window.onload = async function() {
 
   try {
     if (idCliente) {
-      var datosCliente = await obtenerCliente(idCliente);
-      if (!datosCliente.encontrado) {
+      var tablaClientes = await leerHoja('CLIENTES');
+      var filasClientes = tablaAFilas(tablaClientes);
+      var clienteRow = null;
+      for (var i = 0; i < filasClientes.length; i++) {
+        if (filasClientes[i][1] && filasClientes[i][1].toString() === idCliente.toString()) {
+          clienteRow = filasClientes[i];
+          break;
+        }
+      }
+      if (!clienteRow) {
         mostrarError('Cliente no encontrado. Pedile a Benidorm tu link actualizado.');
         return;
       }
       cliente = {
-        nombre:    datosCliente.nombre || '',
-        provincia: datosCliente.provincia || '',
+        nombre:    clienteRow[0] ? clienteRow[0].toString() : '',
+        provincia: clienteRow[5] ? clienteRow[5].toString() : '',
         registrado: true,
       };
     } else {
       cliente = { nombre: '', provincia: '', registrado: false };
     }
 
-    productos = await obtenerProductos();
+    var tablaProductos = await leerHojaRaw('PRODUCTOS');
+    var filasProductos = tablaAFilas(tablaProductos);
 
-    if (!productos || productos.length === 0) {
+    productos = [];
+    for (var j = 0; j < filasProductos.length; j++) {
+      var fila = filasProductos[j];
+      var nombreRaw = fila[1];
+      var precioRaw = fila[3];
+      if (!nombreRaw || nombreRaw === '' || nombreRaw === null) continue;
+      var nombre = nombreRaw.toString().trim();
+      var precio  = parseFloat(precioRaw) || 0;
+      if (!nombre || precio <= 0) continue;
+      if (nombre.toUpperCase().indexOf('LISTA') >= 0) continue;
+      if (nombre.toUpperCase().indexOf('VENTA') >= 0) continue;
+      if (nombre === '#N/A') continue;
+      productos.push({ nombre: nombre, precio: precio });
+    }
+
+    if (productos.length === 0) {
       mostrarError('No hay productos disponibles. Comunicate con Benidorm.');
       return;
     }
