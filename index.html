@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -73,7 +75,6 @@ tbody tr:hover td:first-child{background:var(--azul-claro);}
 .sem.rojo{background:var(--rojo-bg);color:var(--rojo-sem);}
 .btn-wa{background:#25d366;color:#fff;border:none;border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;font-weight:600;}
 .btn-wa:hover{background:#1ea952;}
-/* MOBILE TAB */
 .mobile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .mobile-card{background:#fff;border-radius:14px;padding:20px 18px;box-shadow:0 2px 8px rgba(34,73,122,.1);border-top:4px solid var(--azul);position:relative;overflow:hidden;}
 .mobile-card.verde{border-top-color:var(--verde-ok);}
@@ -119,62 +120,64 @@ tbody tr:hover td:first-child{background:var(--azul-claro);}
 </div>
 
 <script>
-const SHEET_ID = '1h8KpIRKx75h4CMHNIvL5vye4LQ_O_ReyisIZOrpass0';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzBHgo95jJE6CAinxgPa8ooExf4TKJg2VOvRmGDk25JgCX0mGRznGG-xRH9o3c--t1O/exec';
 const WA_NUM   = '5491134165086';
 let D = null, MES_SEL = null;
 let sortCol = -1, sortDir = 1;
 
-async function leerHoja(nombre) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(nombre)}&headers=1`;
-  const r   = await fetch(url);
-  const txt = await r.text();
-  const json = JSON.parse(txt.substring(47, txt.length - 2));
-  return json.table;
+function esperar(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
 }
 
-function tablaAFilas(tabla) {
-  if (!tabla || !tabla.rows) return [];
-  return tabla.rows.map(row =>
-    (tabla.cols || []).map((col, i) => {
-      const c = row.c && row.c[i];
-      if (!c || c.v === null || c.v === undefined) return '';
-      if (typeof c.v === 'string' && c.v.startsWith('Date(')) {
-        const p = c.v.replace('Date(','').replace(')','').split(',');
-        return new Date(+p[0], +p[1], +p[2]);
-      }
-      return c.v;
-    })
-  );
+async function pedirDatosDashboard(pin, intentos) {
+  intentos = intentos || 3;
+  var ultimoError = null;
+  for (var i = 0; i < intentos; i++) {
+    try {
+      var r = await fetch(API_URL, {
+        method: 'POST',
+        body: new URLSearchParams({ action: 'dashboard', pin: pin })
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      var data = await r.json();
+      if (data.error) throw new Error(data.error);
+      return data;
+    } catch (e) {
+      ultimoError = e;
+      if (i < intentos - 1) await esperar(800 * (i + 1));
+    }
+  }
+  throw ultimoError;
 }
 
 window.onload = async function() {
   try {
-    const [tablaBase, tablaClientes, tablaCtaCte] = await Promise.all([
-      leerHoja('BASE'),
-      leerHoja('CLIENTES'),
-      leerHoja('CTA CTE')
-    ]);
-    const filasBase     = tablaAFilas(tablaBase);
-    const filasClientes = tablaAFilas(tablaClientes);
-    const filasCtaCte   = tablaAFilas(tablaCtaCte);
-
-    const mapaClientes = {};
-    for (const row of filasClientes) {
-      if (row[0]) mapaClientes[row[0].toString().trim()] = {
-        telefono:  row[6] ? row[6].toString() : '',
-        provincia: row[5] ? row[5].toString() : '',
-      };
+    var pin = localStorage.getItem('benidorm_dash_pin');
+    if (!pin) {
+      pin = prompt('Ingresá tu PIN del dashboard:');
+      if (!pin) {
+        document.getElementById('tab-graficos').innerHTML =
+          `<div style="color:var(--rojo);padding:20px;background:#fff;border-radius:10px">Necesitás un PIN para ver el dashboard.</div>`;
+        return;
+      }
     }
 
-    // Saldo actual: última fila con valor numérico en columna I (index 8)
-    let saldoActual = 0;
-    for (let i = filasCtaCte.length - 1; i >= 0; i--) {
-      const v = filasCtaCte[i][8];
-      if (typeof v === 'number') { saldoActual = v; break; }
+    var datos;
+    try {
+      datos = await pedirDatosDashboard(pin);
+    } catch (e) {
+      if (e.message === 'PIN incorrecto') {
+        localStorage.removeItem('benidorm_dash_pin');
+        document.getElementById('tab-graficos').innerHTML =
+          `<div style="color:var(--rojo);padding:20px;background:#fff;border-radius:10px">PIN incorrecto. Recargá la página para intentar de nuevo.</div>`;
+        return;
+      }
+      throw e;
     }
 
-    D = calcularDatos(filasBase, mapaClientes);
-    D.saldoCtaCte = saldoActual;
+    localStorage.setItem('benidorm_dash_pin', pin);
+
+    D = datos;
     MES_SEL = D.mesActual.mes;
     renderGraficos();
     renderAnalitico();
@@ -182,98 +185,10 @@ window.onload = async function() {
   } catch(e) {
     document.getElementById('tab-graficos').innerHTML =
       `<div style="color:var(--rojo);padding:20px;background:#fff;border-radius:10px">
-        <strong>Error al cargar datos:</strong> ${e.message}<br>
-        <small style="color:var(--gris)">Asegurate de que el Sheets esté compartido como público visor.</small>
+        <strong>Error al cargar datos:</strong> ${e.message}
       </div>`;
   }
 };
-
-function calcularDatos(filas, mapaClientes) {
-  const hoy = new Date();
-  const porMes = {}, porCliente = {};
-  const mesesSet = new Set();
-
-  for (const fila of filas) {
-    const cliente  = fila[0] ? fila[0].toString().trim() : '';
-    const fecha    = fila[1] instanceof Date ? fila[1] : null;
-    const cantidad = parseFloat(fila[5]) || 0;
-    const monto    = parseFloat(fila[4]) || 0;
-    const ga       = parseFloat(fila[9]) || 0;
-    const nRemito  = fila[6] ? fila[6].toString() : '';
-    const mes      = fila[12] ? fila[12].toString().trim() : '';
-    const tipo     = fila[13] ? fila[13].toString() : 'PRODUCTO';
-
-    if (!cliente || !mes || mes === 'MES' || mes.includes('1899')) continue;
-
-    mesesSet.add(mes);
-    if (!porMes[mes]) porMes[mes] = { facturado:0, cajas:0, ganancia:0, remitos:new Set() };
-    if (!porCliente[cliente]) porCliente[cliente] = { cajasPorMes:{}, montoPorMes:{}, gaPorMes:{}, remitosPorMes:{}, fechas:[], totalCajas:0, totalMonto:0, totalGA:0 };
-
-    // GA: todos los tipos
-    porMes[mes].ganancia += ga;
-    porCliente[cliente].totalGA = (porCliente[cliente].totalGA || 0) + ga;
-    porCliente[cliente].gaPorMes[mes] = (porCliente[cliente].gaPorMes[mes] || 0) + ga;
-
-    if (tipo === 'PRODUCTO') {
-      porMes[mes].facturado += monto;
-      porMes[mes].cajas     += cantidad;
-      if (nRemito) porMes[mes].remitos.add(nRemito);
-      porCliente[cliente].cajasPorMes[mes] = (porCliente[cliente].cajasPorMes[mes]||0) + cantidad;
-      porCliente[cliente].totalCajas += cantidad;
-      porCliente[cliente].totalMonto  = (porCliente[cliente].totalMonto||0) + monto;
-      porCliente[cliente].montoPorMes[mes] = (porCliente[cliente].montoPorMes[mes]||0) + monto;
-      if (!porCliente[cliente].remitosPorMes[mes]) porCliente[cliente].remitosPorMes[mes] = new Set();
-      if (nRemito) porCliente[cliente].remitosPorMes[mes].add(nRemito);
-      if (fecha) porCliente[cliente].fechas.push(fecha.toDateString());
-    }
-  }
-
-  const meses         = Array.from(mesesSet).sort();
-  const facturado     = meses.map(m => Math.round(porMes[m]?.facturado||0));
-  const ganancia      = meses.map(m => Math.round(porMes[m]?.ganancia||0));
-  const pedidosPorMes = meses.map(m => porMes[m]?.remitos?.size||0);
-  const cajasPorMes   = meses.map(m => Math.round(porMes[m]?.cajas||0));
-
-  const mesActualKey   = meses[meses.length-1];
-  const mesAnteriorKey = meses[meses.length-2];
-  const mA   = porMes[mesActualKey]   || {};
-  const mAnt = porMes[mesAnteriorKey] || {};
-
-  const clientes = Object.entries(porCliente).map(([nombre, data]) => {
-    const fechasUnicas = [...new Set(data.fechas)].map(s => new Date(s)).sort((a,b) => b-a);
-    const ultima       = fechasUnicas[0];
-    const dias         = ultima ? Math.floor((hoy-ultima)/86400000) : 999;
-    const ultimoPedido = ultima ? ultima.toLocaleDateString('es-AR') : '--';
-    let frecDias = 0;
-    if (fechasUnicas.length > 1) {
-      const ints = [];
-      for (let i=0;i<fechasUnicas.length-1;i++) ints.push(Math.abs((fechasUnicas[i]-fechasUnicas[i+1])/86400000));
-      frecDias = Math.round(ints.reduce((a,b)=>a+b,0)/ints.length);
-    }
-    const nPedidos  = fechasUnicas.length;
-    const promCajas = nPedidos > 0 ? Math.round(data.totalCajas/nPedidos) : 0;
-    const promMonto = nPedidos > 0 ? Math.round(data.totalMonto/nPedidos) : 0;
-    const cliInfo   = mapaClientes[nombre] || {};
-    const remitosPorMesCount = {};
-    for (const m in data.remitosPorMes) remitosPorMesCount[m] = data.remitosPorMes[m].size;
-    return {
-      nombre, cajasPorMes:data.cajasPorMes, montoPorMes:data.montoPorMes,
-      gaPorMes:data.gaPorMes, remitosPorMes:remitosPorMesCount,
-      totalCajas:Math.round(data.totalCajas),
-      totalMonto:Math.round(data.totalMonto||0),
-      totalGA:Math.round(data.totalGA||0),
-      nPedidos, promCajas, promMonto,
-      ultimoPedido, diasSinPedir:dias, frecDias,
-      telefono:cliInfo.telefono||'', provincia:cliInfo.provincia||''
-    };
-  }).filter(c=>c.totalCajas>0).sort((a,b)=>b.totalCajas-a.totalCajas);
-
-  return {
-    mesActual:   {mes:mesActualKey,   facturado:Math.round(mA.facturado||0),   cajas:Math.round(mA.cajas||0),   pedidos:mA.remitos?.size||0,   ganancia:Math.round(mA.ganancia||0)},
-    mesAnterior: {mes:mesAnteriorKey, facturado:Math.round(mAnt.facturado||0), cajas:Math.round(mAnt.cajas||0), pedidos:mAnt.remitos?.size||0, ganancia:Math.round(mAnt.ganancia||0)},
-    meses, facturado, ganancia, pedidosPorMes, cajasPorMes, clientes
-  };
-}
 
 function mostrarTab(t) {
   ['graficos','analitico','mobile'].forEach(id=>document.getElementById('tab-'+id).style.display=id===t?'':'none');
@@ -290,7 +205,6 @@ function renderGraficos(colMes, dirMes, colCli, dirCli, mesClick) {
   if (colCli !== undefined) { sortColCli2 = colCli; sortDirCli2 = dirCli; }
   if (mesClick !== undefined) { mesFiltro = (mesFiltro === mesClick) ? null : mesClick; }
 
-  // ── TABLA 1: Por mes ──
   let totFact=0, totPed=0, totCajas=0, totGA=0;
   const COLS_MES = [
     {label:'Mes',       fn:(m,i)=>m, num:false},
@@ -300,7 +214,7 @@ function renderGraficos(colMes, dirMes, colCli, dirCli, mesClick) {
     {label:'GA $',      fn:(m,i)=>D.ganancia[i]||0, num:true},
   ];
 
-  let mesesIdx = D.meses.map((m,i)=>i).reverse(); // mes actual primero por defecto
+  let mesesIdx = D.meses.map((m,i)=>i).reverse();
   if (sortColMes >= 0) {
     mesesIdx.sort((ia,ib)=>{
       const va=COLS_MES[sortColMes].fn(D.meses[ia],ia), vb=COLS_MES[sortColMes].fn(D.meses[ib],ib);
@@ -322,7 +236,6 @@ function renderGraficos(colMes, dirMes, colCli, dirCli, mesClick) {
     return `<th class="${cls}" onclick="renderGraficos(${i},${sortColMes===i?-sortDirMes:1})">${c.label}</th>`;
   }).join('');
 
-  // ── TABLA 2: Por cliente (filtrada por mes si hay selección) ──
   const COLS_CLI = [
     {label:'Cliente',     fn:c=>c.nombre, num:false},
     {label:'$ Facturado', fn:c=>c._monto, num:true},
@@ -392,7 +305,6 @@ function renderAnalitico(col, dir) {
   if (col !== undefined) { sortCol = col; sortDir = dir; }
   const meses8 = D.meses.slice(-8);
 
-  // Columnas: nombre(0), cajas x mes(1..8), total(9), pedidos(10), prom cajas(11), prom $fact(12), GA total(13), frec(14), último(15), días(16)
   const COLS = [
     {label:'Cliente',      key:'nombre',       fn:c=>c.nombre,        num:false},
     ...meses8.map((m,i)=>({label:`${m.split(' ')[1]}/${m.split(' ')[0].slice(2)}`, key:`mes${i}`, fn:c=>Math.round(c.cajasPorMes[m]||0), num:true})),
@@ -433,7 +345,6 @@ function renderAnalitico(col, dir) {
       const v=Math.round(c.cajasPorMes[m]||0);
       return `<td class="${v>0?'td-val':'td-cero'}">${v>0?v:'--'}</td>`;
     }).join('');
-    // Promedio de cajas variable: desde el primer mes que pidió
     const mesesConPedido = meses8.filter(m=>(c.cajasPorMes[m]||0)>0).length;
     const promCajasVar = mesesConPedido > 0 ? Math.round(c.totalCajas / c.nPedidos) : '--';
     return `<tr>
@@ -451,7 +362,6 @@ function renderAnalitico(col, dir) {
     </tr>`;
   }).join('');
 
-  // Fila de totales de cajas por mes
   const totalesMesCeldas = meses8.map(m=>{
     const tot = clientes.reduce((acc,c)=>acc+(Math.round(c.cajasPorMes[m]||0)),0);
     return `<td style="font-weight:700;color:var(--azul)">${tot>0?tot:'--'}</td>`;
@@ -499,7 +409,6 @@ function actualizarMobile(mes) {
   const saldoF = D.saldoCtaCte || 0;
   const deboF  = saldoF < 0;
 
-  // Promedio de los 3 meses anteriores
   const prom3 = (key) => {
     const vals = [];
     for (let i = idx-1; i >= 0 && vals.length < 3; i--) vals.push(D[key][i]||0);
@@ -527,7 +436,6 @@ function actualizarMobile(mes) {
   const cont = document.getElementById('mobile-cards');
   if (cont) cont.innerHTML = cards;
 
-  // Si el tab mobile está activo, re-renderizar el select también
   const sel = document.getElementById('mobile-mes-sel');
   if (sel) sel.value = MES_SEL;
 }
