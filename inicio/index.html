@@ -37,7 +37,11 @@ h1,h2,h3{font-family:'Montserrat',sans-serif;font-weight:900;line-height:1.15;}
 @media(min-width:720px){.nav-links{display:flex;}}
 
 /* ---------- HERO ---------- */
-.hero{position:relative;background:linear-gradient(160deg,var(--azul-oscuro) 0%,var(--azul) 55%,var(--azul-mid) 100%);color:#fff;padding:72px 0 120px;overflow:hidden;}
+.hero{position:relative;background:
+  linear-gradient(160deg,rgba(21,47,82,.94) 0%,rgba(34,73,122,.93) 55%,rgba(45,90,148,.9) 100%),
+  url('img/lifestyle-costillas.jpg');
+  background-size:cover;background-position:center 30%;
+  color:#fff;padding:72px 0 120px;overflow:hidden;}
 .hero-inner{max-width:1120px;margin:0 auto;padding:0 24px;position:relative;z-index:2;display:grid;gap:36px;align-items:center;}
 @media(min-width:860px){.hero-inner{grid-template-columns:1.1fr .9fr;}}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--dorado-claro);margin-bottom:20px;}
@@ -72,14 +76,37 @@ section{padding:76px 0;}
 .stat span{font-size:12px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;}
 
 /* ---------- PRODUCTOS ---------- */
-.productos-grid{display:grid;gap:24px;}
-@media(min-width:760px){.productos-grid{grid-template-columns:repeat(3,1fr);}}
-.producto-card{border-radius:var(--radio);overflow:hidden;background:#0b1b33;position:relative;box-shadow:0 12px 28px -10px rgba(21,47,82,.4);}
-.producto-card img{width:100%;height:260px;object-fit:cover;}
-.producto-card .cap{padding:20px;}
-.producto-card .cap .tag{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:var(--dorado-claro);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;}
-.producto-card .cap h3{color:#fff;font-size:18px;margin-bottom:4px;}
-.producto-card .cap p{color:rgba(255,255,255,.65);font-size:13px;}
+.prod-categoria{margin-bottom:56px;}
+.prod-categoria:last-child{margin-bottom:0;}
+.prod-categoria-titulo{display:flex;align-items:baseline;gap:12px;margin-bottom:22px;}
+.prod-categoria-titulo h3{font-family:'Montserrat',sans-serif;font-size:20px;color:var(--azul);}
+.prod-categoria-titulo .linea{flex:1;height:1px;background:var(--gris-borde);}
+.productos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+@media(min-width:640px){.productos-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:900px){.productos-grid{grid-template-columns:repeat(4,1fr);}}
+.producto-card{border-radius:var(--radio);background:#fff;border:1px solid var(--gris-borde);padding:18px 14px 16px;text-align:center;transition:transform .18s,box-shadow .18s;}
+.producto-card:hover{transform:translateY(-4px);box-shadow:0 14px 28px -14px rgba(34,73,122,.3);}
+.producto-card img{width:100%;height:150px;object-fit:contain;margin-bottom:10px;}
+.producto-card h4{font-family:'Montserrat',sans-serif;font-size:13.5px;font-weight:700;color:var(--texto);}
+
+/* ---------- FORMATO BOLSA ---------- */
+.bolsas-banda{background:var(--azul-oscuro);border-radius:20px;padding:36px 28px;display:grid;gap:28px;align-items:center;margin-top:8px;}
+@media(min-width:760px){.bolsas-banda{grid-template-columns:.9fr 1.1fr;padding:44px;}}
+.bolsas-texto .eyebrow{color:var(--dorado-claro);}
+.bolsas-texto h3{font-family:'Montserrat',sans-serif;color:#fff;font-size:24px;margin-bottom:10px;}
+.bolsas-texto p{color:rgba(255,255,255,.7);font-size:14.5px;}
+.bolsas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.bolsas-grid div{background:rgba(255,255,255,.06);border-radius:12px;padding:10px;}
+.bolsas-grid img{width:100%;height:110px;object-fit:contain;}
+
+/* ---------- OCASIONES ---------- */
+.ocasiones{background:var(--gris-bg);padding-top:0;}
+.ocasiones-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:700px){.ocasiones-grid{grid-template-columns:repeat(3,1fr);}}
+.ocasion-card{position:relative;border-radius:var(--radio);overflow:hidden;height:220px;}
+.ocasion-card img{width:100%;height:100%;object-fit:cover;}
+.ocasion-card span{position:absolute;left:16px;bottom:14px;color:#fff;font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;text-shadow:0 2px 8px rgba(0,0,0,.5);}
+.ocasion-card::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(11,27,51,.75) 100%);}
 
 /* ---------- PEDIDO CTA ---------- */
 .pedido{background:linear-gradient(135deg,var(--azul) 0%,var(--azul-oscuro) 100%);color:#fff;}
@@ -100,7 +127,10 @@ section{padding:76px 0;}
 footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 28px;}
 .footer-inner{display:flex;flex-direction:column;gap:24px;align-items:center;text-align:center;}
 @media(min-width:720px){.footer-inner{flex-direction:row;justify-content:space-between;text-align:left;}}
-.footer-logo img{height:34px;margin-bottom:10px;}
+.footer-logo{display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap;justify-content:center;}
+@media(min-width:720px){.footer-logo{justify-content:flex-start;}}
+.footer-logo img.logo{height:34px;}
+.footer-logo img.afip{height:44px;}
 .footer-wsp{display:inline-flex;align-items:center;gap:10px;background:var(--verde);color:#fff;padding:12px 22px;border-radius:10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;}
 .footer-wsp:hover{background:var(--verde-hover);}
 .footer-bottom{margin-top:36px;padding-top:24px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:12px;color:rgba(255,255,255,.4);}
@@ -163,31 +193,53 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
     <div class="eyebrow">Nuestros productos</div>
     <h2 class="section-title">Una línea completa para cada necesidad.</h2>
     <p class="section-lede">Desde los clásicos de mesa hasta salsas especiales con sabores únicos, en los formatos que tu negocio necesita.</p>
-    <div class="productos-grid">
-      <div class="producto-card">
-        <img src="img/aderezos.jpeg" alt="Aderezos clásicos Benidorm: mayonesa, mostaza, ketchup, salsa golf, ají picante y barbacoa">
-        <div class="cap">
-          <div class="tag">Clásicos</div>
-          <h3>Aderezos de mesa</h3>
-          <p>Mayonesa, mostaza, ketchup, salsa golf, ají picante y barbacoa.</p>
-        </div>
+
+    <div class="prod-categoria">
+      <div class="prod-categoria-titulo"><h3>Clásicos de mesa</h3><div class="linea"></div></div>
+      <div class="productos-grid">
+        <div class="producto-card"><img src="img/mayonesa.png" alt="Mayonesa Benidorm"><h4>Mayonesa</h4></div>
+        <div class="producto-card"><img src="img/ketchup.png" alt="Kétchup Benidorm"><h4>Kétchup</h4></div>
+        <div class="producto-card"><img src="img/mostaza.png" alt="Mostaza Benidorm"><h4>Mostaza</h4></div>
+        <div class="producto-card"><img src="img/salsa-golf.png" alt="Salsa Golf Benidorm"><h4>Salsa Golf</h4></div>
       </div>
-      <div class="producto-card">
-        <img src="img/salsas.jpeg" alt="Salsas especiales Benidorm: chimichurri, fugazzeta, queso cheddar, roquefort, parmesano, salame y más">
-        <div class="cap">
-          <div class="tag">Especiales</div>
-          <h3>Salsas de autor</h3>
-          <p>Chimichurri, fugazzeta, tártara, salame, quesos y más de una decena de sabores.</p>
-        </div>
+    </div>
+
+    <div class="prod-categoria">
+      <div class="prod-categoria-titulo"><h3>Salsas especiales</h3><div class="linea"></div></div>
+      <div class="productos-grid">
+        <div class="producto-card"><img src="img/chimichurri.png" alt="Chimichurri Benidorm"><h4>Chimichurri</h4></div>
+        <div class="producto-card"><img src="img/barbacoa.png" alt="Salsa Barbacoa Benidorm"><h4>Barbacoa</h4></div>
+        <div class="producto-card"><img src="img/aji-picante.png" alt="Salsa Ají Picante Benidorm"><h4>Ají Picante</h4></div>
+        <div class="producto-card"><img src="img/fugazzeta.png" alt="Salsa sabor Fugazzeta Benidorm"><h4>Fugazzeta</h4></div>
+        <div class="producto-card"><img src="img/queso-cheddar.png" alt="Salsa sabor Queso Cheddar Benidorm"><h4>Queso Cheddar</h4></div>
+        <div class="producto-card"><img src="img/queso-roquefort.png" alt="Salsa sabor Queso Roquefort Benidorm"><h4>Queso Roquefort</h4></div>
+        <div class="producto-card"><img src="img/salame.png" alt="Salsa sabor Salame Benidorm"><h4>Salame</h4></div>
+        <div class="producto-card"><img src="img/mayo-aceitunas.png" alt="Mayonesa con Aceitunas Benidorm"><h4>Mayo con Aceitunas</h4></div>
       </div>
-      <div class="producto-card">
-        <img src="img/bolsas.jpeg" alt="Formatos mayoristas Benidorm en bolsas de 2.900cc y 3.000gr">
-        <div class="cap">
-          <div class="tag">Mayorista</div>
-          <h3>Formato bolsa</h3>
-          <p>Bolsas de 2.900cc y 3.000gr, pensadas para alto consumo.</p>
-        </div>
+    </div>
+
+    <div class="bolsas-banda">
+      <div class="bolsas-texto">
+        <div class="eyebrow">Formato mayorista</div>
+        <h3>Bolsas de alto consumo</h3>
+        <p>Los cuatro clásicos también en bolsa, pensados para locales de alta rotación y distribuidores.</p>
       </div>
+      <div class="bolsas-grid">
+        <div><img src="img/bolsa-mayonesa.png" alt="Bolsa de Mayonesa Benidorm"></div>
+        <div><img src="img/bolsa-ketchup.png" alt="Bolsa de Kétchup Benidorm"></div>
+        <div><img src="img/bolsa-mostaza.png" alt="Bolsa de Mostaza Benidorm"></div>
+        <div><img src="img/bolsa-salsa-golf.png" alt="Bolsa de Salsa Golf Benidorm"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ocasiones">
+  <div class="wrap">
+    <div class="ocasiones-grid">
+      <div class="ocasion-card"><img src="img/lifestyle-hamburguesas.jpg" alt="Hamburguesas con aderezos Benidorm"><span>Sandwicherías</span></div>
+      <div class="ocasion-card"><img src="img/lifestyle-alitas.jpg" alt="Alitas con salsas Benidorm"><span>Bares y parrillas</span></div>
+      <div class="ocasion-card"><img src="img/lifestyle-nachos.jpg" alt="Nachos con salsas Benidorm"><span>Food trucks y kioscos</span></div>
     </div>
   </div>
 </section>
@@ -224,7 +276,10 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
 <footer>
   <div class="wrap footer-inner">
     <div>
-      <div class="footer-logo"><img src="img/logo.png" alt="Benidorm"></div>
+      <div class="footer-logo">
+        <img class="logo" src="img/logo.png" alt="Benidorm">
+        <img class="afip" src="img/afip.png" alt="Data Fiscal AFIP">
+      </div>
       <div style="font-size:13px">Aderezos & Salsas — Industria Argentina</div>
     </div>
     <a class="footer-wsp" href="https://wa.me/5491134165086" target="_blank" rel="noopener">Escribinos por WhatsApp</a>
