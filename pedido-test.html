@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -220,7 +221,7 @@ function detectarSabor(n) {
   if (n.indexOf('CHIMICHURRI') >= 0) return 'chimichurri';
   if (n.indexOf('BARBACOA') >= 0) return 'barbacoa';
   if (n.indexOf('PICANTE') >= 0 || n.indexOf('AJI') >= 0 || n.indexOf('AJÍ') >= 0) return 'aji-picante';
-  if (n.indexOf('TARTARINA') >= 0) return 'tartarina';
+  if (n.indexOf('TARTAR') >= 0) return 'tartarina';
   if (n.indexOf('SALAME') >= 0) return 'salame';
   if (n.indexOf('GOLF') >= 0) return 'salsa-golf';
   if (n.indexOf('KETCHUP') >= 0 || n.indexOf('KÉTCHUP') >= 0) return 'ketchup';
@@ -294,7 +295,6 @@ function renderProductos() {
       var cant = cantidades[i] || 0;
       var sub  = cant > 0 ? formatPeso(p.precio * cant) : '';
       html += '<div class="producto-card ' + catKey + (cant > 0 ? ' activo' : '') + '" id="card-' + i + '">' +
-        '<img class="prod-thumb" src="' + getImagenProducto(p.nombre, catKey) + '" alt="" loading="lazy">' +
         '<div class="prod-info">' +
           '<div class="prod-nombre">' + p.nombre + '</div>' +
           '<div class="prod-precio">Precio x caja: <span>' + formatPeso(p.precio) + '</span></div>' +
@@ -305,6 +305,7 @@ function renderProductos() {
           '<button class="btn-cnt mas" onclick="cambiarCant(' + i + ',1)">+</button>' +
         '</div>' +
         '<div class="prod-subtotal" id="sub-' + i + '">' + sub + '</div>' +
+        '<img class="prod-thumb" src="' + getImagenProducto(p.nombre, catKey) + '" alt="" loading="lazy">' +
       '</div>';
     }
   }
