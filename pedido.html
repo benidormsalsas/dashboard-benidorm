@@ -73,7 +73,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 <body>
 
 <div class="header">
-  <div class="logo-b">B</div>
+  <img src="inicio/img/logo.png" alt="Benidorm" style="height:52px;margin:0 auto 8px;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));">
   <div class="header-title">Benidorm</div>
   <div class="header-sub">Aderezos &amp; Salsas</div>
 </div>
@@ -330,7 +330,8 @@ function confirmarPedido() {
   var totalCajasMsg = 0;
   for (var k = 0; k < productos.length; k++) totalCajasMsg += (cantidades[k] || 0);
 
-  var msg = 'NUEVO PEDIDO - BENIDORM\n';
+  var msg = 'NUEVO PEDIDO WEB - BENIDORM\n';
+  msg += '(Pedido generado desde la página web)\n';
   msg += 'Fecha: ' + fecha + '\n';
   msg += 'Cliente: ' + cliente.nombre + '\n';
   if (cliente.provincia) msg += 'Provincia: ' + cliente.provincia + '\n';
