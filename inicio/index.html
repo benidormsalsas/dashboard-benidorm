@@ -71,7 +71,7 @@ section{padding:76px 0;}
 .nosotros-grid{display:grid;gap:40px;align-items:center;}
 @media(min-width:860px){.nosotros-grid{grid-template-columns:1fr 1fr;}}
 .nosotros-img{display:flex;align-items:center;justify-content:center;padding:20px;}
-.nosotros-img img{width:100%;max-width:280px;filter:drop-shadow(0 14px 22px rgba(21,47,82,.25));}
+.nosotros-img img{width:100%;max-width:200px;filter:drop-shadow(0 14px 22px rgba(21,47,82,.25));}
 .nosotros-texto p{color:var(--gris);font-size:16px;margin-bottom:16px;}
 .stat-row{display:flex;gap:32px;margin-top:28px;flex-wrap:wrap;}
 .stat b{display:block;font-family:'Montserrat',sans-serif;font-size:28px;color:var(--azul);}
@@ -125,6 +125,14 @@ section{padding:76px 0;}
 .ocasion-card img{width:100%;height:100%;object-fit:cover;}
 .ocasion-card span{position:absolute;left:16px;bottom:14px;color:#fff;font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;text-shadow:0 2px 8px rgba(0,0,0,.5);}
 .ocasion-card::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(11,27,51,.75) 100%);}
+
+/* ---------- CONDICIONES ---------- */
+.condiciones-grid{display:grid;gap:20px;}
+@media(min-width:700px){.condiciones-grid{grid-template-columns:repeat(2,1fr);}}
+.condicion-card{background:var(--gris-bg);border-radius:var(--radio);padding:24px 26px;border-left:4px solid var(--celeste);}
+.condicion-card h3{font-family:'Montserrat',sans-serif;font-size:15px;color:var(--azul);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.condicion-card p{color:var(--gris);font-size:14px;line-height:1.65;}
+.condicion-card p + p{margin-top:8px;}
 
 /* ---------- PEDIDO CTA ---------- */
 .pedido{background:linear-gradient(135deg,var(--azul) 0%,var(--azul-oscuro) 100%);color:#fff;}
@@ -192,12 +200,12 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
     <div class="nosotros-texto">
       <div class="eyebrow">Quiénes somos</div>
       <h2 class="section-title">Especialistas en aderezos y salsas desde hace generaciones.</h2>
-      <p>Elaboramos mayonesa, ketchup, mostaza, salsa golf y una línea de salsas especiales pensadas para acompañar cualquier comida, fría o caliente.</p>
-      <p>Trabajamos codo a codo con bares, restaurantes, sandwicherías, kioscos y distribuidores, ofreciendo consistencia de sabor y precios competitivos en cada pedido.</p>
+      <p>Somos una empresa familiar con producción propia desde 1975. Trabajamos una línea de aderezos de muy buena rotación y margen, que incluye también salsas especiales.</p>
+      <p>Tenemos la variedad más amplia del mercado en pomos de 500g, con 16 gustos — productos que funcionan muy bien en góndola para tu negocio.</p>
       <div class="stat-row">
-        <div class="stat"><b>+20</b><span>Variedades</span></div>
-        <div class="stat"><b>24</b><span>Provincias que alcanzamos</span></div>
-        <div class="stat"><b>100%</b><span>Industria Argentina</span></div>
+        <div class="stat"><b>16</b><span>Sabores en pomo 500g</span></div>
+        <div class="stat"><b>+20</b><span>Variedades en total</span></div>
+        <div class="stat"><b>100%</b><span>Producción propia</span></div>
       </div>
     </div>
     <div class="nosotros-img">
@@ -288,6 +296,32 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
       <div class="ocasion-card"><img src="img/lifestyle-hamburguesas.jpg" alt="Hamburguesas con aderezos Benidorm"><span>Sandwicherías</span></div>
       <div class="ocasion-card"><img src="img/lifestyle-alitas.jpg" alt="Alitas con salsas Benidorm"><span>Bares y parrillas</span></div>
       <div class="ocasion-card"><img src="img/lifestyle-nachos.jpg" alt="Nachos con salsas Benidorm"><span>Food trucks y kioscos</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="condiciones">
+  <div class="wrap">
+    <div class="eyebrow">Antes de pedir</div>
+    <h2 class="section-title">Condiciones de pedido</h2>
+    <div class="condiciones-grid">
+      <div class="condicion-card">
+        <h3>📦 Pedido mínimo</h3>
+        <p>15 cajas por pedido.</p>
+      </div>
+      <div class="condicion-card">
+        <h3>💳 Formas de pago</h3>
+        <p>Efectivo o transferencia.</p>
+      </div>
+      <div class="condicion-card">
+        <h3>🏭 Stock y vencimiento</h3>
+        <p>Stock permanente. Vencimiento de la mercadería a 6 meses.</p>
+      </div>
+      <div class="condicion-card">
+        <h3>🚚 Envíos a todo el país</h3>
+        <p>Dentro de CABA podemos bonificar según la zona. Fuera de CABA, el envío hasta destino queda a elección del cliente: nosotros entregamos sin cargo la mercadería en el expreso o sucursal en Capital Federal.</p>
+        <p>Si ya trabajás con alguna empresa de transporte, perfecto — y si no, con gusto te ayudamos a consultar opciones.</p>
+      </div>
     </div>
   </div>
 </section>
