@@ -26,6 +26,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 .seccion-titulo{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--azul);text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--azul-claro);}
 .producto-card{background:#fff;border-radius:var(--radio);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(34,73,122,.07);border:2px solid transparent;transition:border-color .2s;}
 .producto-card.activo{border-color:var(--azul);}
+.prod-thumb{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 3px 6px rgba(34,73,122,.3));flex-shrink:0;}
+@media(min-width:480px){.prod-thumb{width:62px;height:62px;}}
 .prod-info{flex:1;min-width:0;}
 .prod-nombre{font-size:13px;font-weight:600;margin-bottom:3px;line-height:1.3;}
 .prod-precio{font-size:12px;color:var(--gris);}
@@ -211,6 +213,49 @@ function getCategoria(nombre) {
   return {key:'extra', label:'Extra', cls:'cat-extra'};
 }
 
+function detectarSabor(n) {
+  if (n.indexOf('ACEITUNA') >= 0) return 'mayo-aceitunas';
+  if (n.indexOf('SALSA') >= 0 && n.indexOf('MAYONESA') >= 0) return 'mayonesa-2';
+  if (n.indexOf('QUESO') >= 0 && n.indexOf('CHEDDAR') >= 0) return 'queso-cheddar';
+  if (n.indexOf('QUESO') >= 0 && n.indexOf('ROQUEFORT') >= 0) return 'queso-roquefort';
+  if (n.indexOf('QUESO') >= 0 && n.indexOf('PARMESANO') >= 0) return 'queso-parmesano';
+  if (n.indexOf('FUGAZZETA') >= 0) return 'fugazzeta';
+  if (n.indexOf('CHIMICHURRI') >= 0) return 'chimichurri';
+  if (n.indexOf('BARBACOA') >= 0) return 'barbacoa';
+  if (n.indexOf('PICANTE') >= 0 || n.indexOf('AJI') >= 0 || n.indexOf('AJÍ') >= 0) return 'aji-picante';
+  if (n.indexOf('TARTAR') >= 0) return 'tartarina';
+  if (n.indexOf('SALAME') >= 0) return 'salame';
+  if (n.indexOf('GOLF') >= 0) return 'salsa-golf';
+  if (n.indexOf('KETCHUP') >= 0 || n.indexOf('KÉTCHUP') >= 0) return 'ketchup';
+  if (n.indexOf('DULCE') >= 0 && n.indexOf('MOSTAZA') >= 0) return 'mostaza-dulce';
+  if (n.indexOf('MOSTAZA') >= 0) return 'mostaza';
+  if (n.indexOf('MAYONESA') >= 0) return 'mayonesa';
+  return null;
+}
+
+var MAPA_FOTOS = {
+  'bolsa-mayonesa':'bolsa-mayonesa-1.png','bolsa-mayonesa-2':'bolsa-mayonesa-2.png','bolsa-mostaza':'bolsa-mostaza.png',
+  'bolsa-ketchup':'bolsa-ketchup.png','bolsa-salsa-golf':'bolsa-salsa-golf.png',
+  'pg-mayonesa':'pg-mayonesa-1.png','pg-mayonesa-2':'pg-mayonesa-2.png','pg-mostaza':'pg-mostaza.png','pg-ketchup':'pg-ketchup.png',
+  'pg-salsa-golf':'pg-salsa-golf.png','pg-chimichurri':'pg-chimichurri.png','pg-barbacoa':'pg-barbacoa.png',
+  'pg-aji-picante':'pg-aji-picante.png','pg-fugazzeta':'pg-fugazzeta.png','pg-mostaza-dulce':'pg-mostaza-dulce.png',
+  'pg-queso-parmesano':'pg-queso-parmesano.png','pg-queso-cheddar':'pg-queso-cheddar.png',
+  'pg-queso-roquefort':'pg-queso-roquefort.png','pg-tartarina':'pg-tartarina.png','pg-salame':'pg-salame.png',
+  'pg-mayo-aceitunas':'pg-mayo-aceitunas.png',
+  'pc-mayonesa':'pc-mayonesa.png','pc-mostaza':'pc-mostaza.png','pc-ketchup':'pc-ketchup.png','pc-salsa-golf':'pc-salsa-golf.png',
+  'ind-mayonesa':'ind-mayonesa.png','ind-mostaza':'ind-mostaza.png','ind-ketchup':'ind-ketchup.png','ind-salsa-golf':'ind-salsa-golf.png'
+};
+var PREFIJO_POR_CATEGORIA = {'bolsas':'bolsa','pomos-grandes':'pg','pomos-chicos':'pc','individuales':'ind'};
+
+function getImagenProducto(nombre, categoriaKey) {
+  var n = nombre.toUpperCase();
+  var sabor = detectarSabor(n);
+  if (!sabor) return 'inicio/img/logo.png';
+  var prefijo = PREFIJO_POR_CATEGORIA[categoriaKey] || 'pg';
+  var archivo = MAPA_FOTOS[prefijo + '-' + sabor] || MAPA_FOTOS['pg-' + sabor];
+  return archivo ? 'inicio/img/' + archivo : 'inicio/img/logo.png';
+}
+
 function confirmarNombre() {
   var input = document.getElementById('nombre-input');
   var nombre = input ? input.value.trim() : '';
@@ -262,6 +307,7 @@ function renderProductos() {
           '<button class="btn-cnt mas" onclick="cambiarCant(' + i + ',1)">+</button>' +
         '</div>' +
         '<div class="prod-subtotal" id="sub-' + i + '">' + sub + '</div>' +
+        '<img class="prod-thumb" src="' + getImagenProducto(p.nombre, catKey) + '" alt="" loading="lazy">' +
       '</div>';
     }
   }
