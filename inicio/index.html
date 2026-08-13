@@ -89,6 +89,22 @@ section{padding:76px 0;}
 .producto-card img{width:100%;height:150px;object-fit:contain;margin-bottom:10px;}
 .producto-card h4{font-family:'Montserrat',sans-serif;font-size:13.5px;font-weight:700;color:var(--texto);}
 
+/* ---------- PRODUCTOS: CARRUSELES ---------- */
+.carrusel-bloque{margin-bottom:52px;}
+.carrusel-bloque:last-child{margin-bottom:0;}
+.carrusel-cabecera{margin-bottom:18px;}
+.carrusel-cabecera h3{font-family:'Montserrat',sans-serif;font-size:19px;color:var(--azul);margin-bottom:4px;}
+.carrusel-cabecera p{color:var(--gris);font-size:14px;}
+.carrusel{display:flex;align-items:center;gap:10px;}
+.car-track{flex:1;display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px 2px 14px;scrollbar-width:none;}
+.car-track::-webkit-scrollbar{display:none;}
+.car-slide{flex:0 0 auto;width:180px;scroll-snap-align:center;background:#fff;border:1px solid var(--gris-borde);border-radius:var(--radio);padding:16px 12px 14px;text-align:center;}
+.car-slide img{width:100%;height:190px;object-fit:contain;margin-bottom:8px;}
+.car-slide h4{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:var(--texto);}
+.car-arrow{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid var(--gris-borde);box-shadow:0 6px 16px -4px rgba(34,73,122,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--azul);font-size:18px;}
+.car-arrow:hover{background:var(--azul-claro);}
+@media(min-width:640px){.car-slide{width:200px;}.car-slide img{height:210px;}}
+
 /* ---------- FORMATO BOLSA ---------- */
 .bolsas-banda{background:var(--azul-oscuro);border-radius:20px;padding:36px 28px;display:grid;gap:28px;align-items:center;margin-top:8px;}
 @media(min-width:760px){.bolsas-banda{grid-template-columns:.9fr 1.1fr;padding:44px;}}
@@ -194,41 +210,73 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
     <h2 class="section-title">Una línea completa para cada necesidad.</h2>
     <p class="section-lede">Desde los clásicos de mesa hasta salsas especiales con sabores únicos, en los formatos que tu negocio necesita.</p>
 
-    <div class="prod-categoria">
-      <div class="prod-categoria-titulo"><h3>Clásicos de mesa</h3><div class="linea"></div></div>
-      <div class="productos-grid">
-        <div class="producto-card"><img src="img/mayonesa.png" alt="Mayonesa Benidorm"><h4>Mayonesa</h4></div>
-        <div class="producto-card"><img src="img/ketchup.png" alt="Kétchup Benidorm"><h4>Kétchup</h4></div>
-        <div class="producto-card"><img src="img/mostaza.png" alt="Mostaza Benidorm"><h4>Mostaza</h4></div>
-        <div class="producto-card"><img src="img/salsa-golf.png" alt="Salsa Golf Benidorm"><h4>Salsa Golf</h4></div>
+    <div class="carrusel-bloque">
+      <div class="carrusel-cabecera">
+        <h3>Formato bolsa</h3>
+        <p>Para locales de alta rotación y distribuidores.</p>
+      </div>
+      <div class="carrusel">
+        <button class="car-arrow" onclick="moverCarrusel('car-bolsas',-1)" aria-label="Anterior">‹</button>
+        <div class="car-track" id="car-bolsas">
+          <div class="car-slide"><img src="img/bolsa-mayonesa-1.png" alt="Bolsa de Mayonesa Benidorm"><h4>Mayonesa</h4></div>
+          <div class="car-slide"><img src="img/bolsa-mayonesa-2.png" alt="Bolsa de Mayonesa Benidorm"><h4>Mayonesa</h4></div>
+          <div class="car-slide"><img src="img/bolsa-mostaza.png" alt="Bolsa de Mostaza Benidorm"><h4>Mostaza</h4></div>
+          <div class="car-slide"><img src="img/bolsa-ketchup.png" alt="Bolsa de Kétchup Benidorm"><h4>Kétchup</h4></div>
+          <div class="car-slide"><img src="img/bolsa-salsa-golf.png" alt="Bolsa de Salsa Golf Benidorm"><h4>Salsa Golf</h4></div>
+        </div>
+        <button class="car-arrow" onclick="moverCarrusel('car-bolsas',1)" aria-label="Siguiente">›</button>
       </div>
     </div>
 
-    <div class="prod-categoria">
-      <div class="prod-categoria-titulo"><h3>Salsas especiales</h3><div class="linea"></div></div>
-      <div class="productos-grid">
-        <div class="producto-card"><img src="img/chimichurri.png" alt="Chimichurri Benidorm"><h4>Chimichurri</h4></div>
-        <div class="producto-card"><img src="img/barbacoa.png" alt="Salsa Barbacoa Benidorm"><h4>Barbacoa</h4></div>
-        <div class="producto-card"><img src="img/aji-picante.png" alt="Salsa Ají Picante Benidorm"><h4>Ají Picante</h4></div>
-        <div class="producto-card"><img src="img/fugazzeta.png" alt="Salsa sabor Fugazzeta Benidorm"><h4>Fugazzeta</h4></div>
-        <div class="producto-card"><img src="img/queso-cheddar.png" alt="Salsa sabor Queso Cheddar Benidorm"><h4>Queso Cheddar</h4></div>
-        <div class="producto-card"><img src="img/queso-roquefort.png" alt="Salsa sabor Queso Roquefort Benidorm"><h4>Queso Roquefort</h4></div>
-        <div class="producto-card"><img src="img/salame.png" alt="Salsa sabor Salame Benidorm"><h4>Salame</h4></div>
-        <div class="producto-card"><img src="img/mayo-aceitunas.png" alt="Mayonesa con Aceitunas Benidorm"><h4>Mayo con Aceitunas</h4></div>
+    <div class="carrusel-bloque">
+      <div class="carrusel-cabecera">
+        <h3>Pomos grandes</h3>
+        <p>La máxima variedad en aderezos y salsas especiales.</p>
+      </div>
+      <div class="carrusel">
+        <button class="car-arrow" onclick="moverCarrusel('car-pomos-grandes',-1)" aria-label="Anterior">‹</button>
+        <div class="car-track" id="car-pomos-grandes">
+          <div class="car-slide"><img src="img/pg-mayonesa-1.png" alt="Pomo grande de Mayonesa Benidorm"><h4>Mayonesa</h4></div>
+          <div class="car-slide"><img src="img/pg-mayonesa-2.png" alt="Pomo grande de Mayonesa Benidorm"><h4>Mayonesa</h4></div>
+          <div class="car-slide"><img src="img/pg-mostaza.png" alt="Pomo grande de Mostaza Benidorm"><h4>Mostaza</h4></div>
+          <div class="car-slide"><img src="img/pg-ketchup.png" alt="Pomo grande de Kétchup Benidorm"><h4>Kétchup</h4></div>
+          <div class="car-slide"><img src="img/pg-salsa-golf.png" alt="Pomo grande de Salsa Golf Benidorm"><h4>Salsa Golf</h4></div>
+          <div class="car-slide"><img src="img/pg-chimichurri.png" alt="Chimichurri Benidorm"><h4>Chimichurri</h4></div>
+          <div class="car-slide"><img src="img/pg-barbacoa.png" alt="Salsa Barbacoa Benidorm"><h4>Barbacoa</h4></div>
+          <div class="car-slide"><img src="img/pg-aji-picante.png" alt="Salsa Ají Picante Benidorm"><h4>Ají Picante</h4></div>
+          <div class="car-slide"><img src="img/pg-fugazzeta.png" alt="Salsa sabor Fugazzeta Benidorm"><h4>Fugazzeta</h4></div>
+          <div class="car-slide"><img src="img/pg-mostaza-dulce.png" alt="Mostaza Dulce Benidorm"><h4>Mostaza Dulce</h4></div>
+          <div class="car-slide"><img src="img/pg-queso-parmesano.png" alt="Salsa sabor Queso Parmesano Benidorm"><h4>Queso Parmesano</h4></div>
+          <div class="car-slide"><img src="img/pg-queso-cheddar.png" alt="Salsa sabor Queso Cheddar Benidorm"><h4>Queso Cheddar</h4></div>
+          <div class="car-slide"><img src="img/pg-queso-roquefort.png" alt="Salsa sabor Queso Roquefort Benidorm"><h4>Queso Roquefort</h4></div>
+          <div class="car-slide"><img src="img/pg-tartarina.png" alt="Salsa Tartarina Benidorm"><h4>Tartarina</h4></div>
+          <div class="car-slide"><img src="img/pg-salame.png" alt="Salsa sabor Salame Benidorm"><h4>Salame</h4></div>
+          <div class="car-slide"><img src="img/pg-mayo-aceitunas.png" alt="Mayonesa con Aceitunas Benidorm"><h4>Mayo con Aceitunas</h4></div>
+        </div>
+        <button class="car-arrow" onclick="moverCarrusel('car-pomos-grandes',1)" aria-label="Siguiente">›</button>
       </div>
     </div>
 
-    <div class="bolsas-banda">
-      <div class="bolsas-texto">
-        <div class="eyebrow">Formato mayorista</div>
-        <h3>Bolsas de alto consumo</h3>
-        <p>Los cuatro clásicos también en bolsa, pensados para locales de alta rotación y distribuidores.</p>
+    <div class="carrusel-bloque">
+      <div class="carrusel-cabecera">
+        <h3>Pomos chicos e individuales</h3>
+        <p>Ideales para consumo directo y servicio de mesa.</p>
       </div>
-      <div class="bolsas-grid">
-        <div><img src="img/bolsa-mayonesa.png" alt="Bolsa de Mayonesa Benidorm"></div>
-        <div><img src="img/bolsa-ketchup.png" alt="Bolsa de Kétchup Benidorm"></div>
-        <div><img src="img/bolsa-mostaza.png" alt="Bolsa de Mostaza Benidorm"></div>
-        <div><img src="img/bolsa-salsa-golf.png" alt="Bolsa de Salsa Golf Benidorm"></div>
+      <div class="carrusel">
+        <button class="car-arrow" onclick="moverCarrusel('car-chicos',-1)" aria-label="Anterior">‹</button>
+        <div class="car-track" id="car-chicos">
+          <div class="car-slide"><img src="img/pc-mayonesa.png" alt="Pomo chico de Mayonesa Benidorm"><h4>Mayonesa</h4></div>
+          <div class="car-slide"><img src="img/pc-mostaza.png" alt="Pomo chico de Mostaza Benidorm"><h4>Mostaza</h4></div>
+          <div class="car-slide"><img src="img/pc-ketchup.png" alt="Pomo chico de Kétchup Benidorm"><h4>Kétchup</h4></div>
+          <div class="car-slide"><img src="img/pc-salsa-golf.png" alt="Pomo chico de Salsa Golf Benidorm"><h4>Salsa Golf</h4></div>
+          <div class="car-slide"><img src="img/ind-mayonesa.png" alt="Individual de Mayonesa Benidorm"><h4>Mayonesa individual</h4></div>
+          <div class="car-slide"><img src="img/ind-mostaza.png" alt="Individual de Mostaza Benidorm"><h4>Mostaza individual</h4></div>
+          <div class="car-slide"><img src="img/ind-ketchup.png" alt="Individual de Kétchup Benidorm"><h4>Kétchup individual</h4></div>
+          <div class="car-slide"><img src="img/ind-salsa-golf.png" alt="Individual de Salsa Golf Benidorm"><h4>Salsa Golf individual</h4></div>
+          <div class="car-slide"><img src="img/ind-queso-parmesano.png" alt="Individual sabor Queso Parmesano Benidorm"><h4>Queso Parmesano individual</h4></div>
+          <div class="car-slide"><img src="img/ind-queso-cheddar.png" alt="Individual sabor Queso Cheddar Benidorm"><h4>Queso Cheddar individual</h4></div>
+        </div>
+        <button class="car-arrow" onclick="moverCarrusel('car-chicos',1)" aria-label="Siguiente">›</button>
       </div>
     </div>
   </div>
@@ -287,6 +335,15 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
   <div class="wrap footer-bottom">© <span id="anio"></span> Benidorm — Todos los derechos reservados.</div>
 </footer>
 
-<script>document.getElementById('anio').textContent = new Date().getFullYear();</script>
+<script>
+document.getElementById('anio').textContent = new Date().getFullYear();
+function moverCarrusel(id, dir){
+  var track = document.getElementById(id);
+  var slide = track.querySelector('.car-slide');
+  var gap = 16;
+  var ancho = slide ? slide.getBoundingClientRect().width + gap : 200;
+  track.scrollBy({left: dir * ancho, behavior:'smooth'});
+}
+</script>
 </body>
 </html>
