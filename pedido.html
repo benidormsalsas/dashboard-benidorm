@@ -76,7 +76,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gris-bg);color:var(--text
 <body>
 
 <div class="header">
-  <img src="inicio/img/logo.png" alt="Benidorm" style="height:52px;margin:0 auto 8px;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));">
+  <img src="img/logo.png" alt="Benidorm" style="height:52px;margin:0 auto 8px;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));">
   <div class="header-title">Benidorm</div>
   <div class="header-sub">Aderezos &amp; Salsas</div>
 </div>
@@ -262,10 +262,10 @@ var PREFIJO_POR_CATEGORIA = {'bolsas':'bolsa','pomos-grandes':'pg','pomos-chicos
 function getImagenProducto(nombre, categoriaKey) {
   var n = nombre.toUpperCase();
   var sabor = detectarSabor(n);
-  if (!sabor) return 'inicio/img/logo.png';
+  if (!sabor) return 'img/logo.png';
   var prefijo = PREFIJO_POR_CATEGORIA[categoriaKey] || 'pg';
   var archivo = MAPA_FOTOS[prefijo + '-' + sabor] || MAPA_FOTOS['pg-' + sabor];
-  return archivo ? 'inicio/img/' + archivo : 'inicio/img/logo.png';
+  return archivo ? 'img/' + archivo : 'img/logo.png';
 }
 
 function confirmarNombre() {
