@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -65,17 +66,6 @@ section{padding:76px 0;}
 .eyebrow{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--celeste);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;}
 .section-title{font-size:clamp(1.7rem,3.6vw,2.5rem);color:var(--azul);margin-bottom:16px;}
 .section-lede{color:var(--gris);font-size:16px;max-width:620px;margin-bottom:44px;}
-
-/* ---------- NOSOTROS ---------- */
-.nosotros{background:var(--gris-bg);}
-.nosotros-grid{display:grid;gap:40px;align-items:center;}
-@media(min-width:860px){.nosotros-grid{grid-template-columns:1fr 1fr;}}
-.nosotros-img{display:flex;align-items:center;justify-content:center;padding:20px;}
-.nosotros-img img{width:100%;max-width:200px;filter:drop-shadow(0 14px 22px rgba(21,47,82,.25));}
-.nosotros-texto p{color:var(--gris);font-size:16px;margin-bottom:16px;}
-.stat-row{display:flex;gap:32px;margin-top:28px;flex-wrap:wrap;}
-.stat b{display:block;font-family:'Montserrat',sans-serif;font-size:28px;color:var(--azul);}
-.stat span{font-size:12px;color:var(--gris);text-transform:uppercase;letter-spacing:1px;}
 
 /* ---------- PRODUCTOS ---------- */
 .prod-categoria{margin-bottom:56px;}
@@ -169,7 +159,6 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
     <a class="nav-logo" href="#top"><img src="img/logo.png" alt="Benidorm"></a>
     <div class="nav-links">
       <a href="#productos">Productos</a>
-      <a href="#nosotros">Nosotros</a>
       <a href="#pedido">Cómo pedir</a>
     </div>
     <a class="nav-cta" href="pedido.html?origen=web">Hacé tu pedido</a>
@@ -194,25 +183,6 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
     <path d="M0,55 C240,100 480,20 720,55 C960,90 1200,35 1440,60 L1440,100 L0,100 Z" fill="var(--celeste)" opacity="0.35"></path>
   </svg>
 </header>
-
-<section class="nosotros" id="nosotros">
-  <div class="wrap nosotros-grid">
-    <div class="nosotros-texto">
-      <div class="eyebrow">Quiénes somos</div>
-      <h2 class="section-title">Especialistas en aderezos y salsas desde hace generaciones.</h2>
-      <p>Somos una empresa familiar con producción propia desde 1975. Trabajamos una línea de aderezos de muy buena rotación y margen, que incluye también salsas especiales.</p>
-      <p>Tenemos la variedad más amplia del mercado en pomos de 500g, con 16 gustos — productos que funcionan muy bien en góndola para tu negocio.</p>
-      <div class="stat-row">
-        <div class="stat"><b>16</b><span>Sabores en pomo 500g</span></div>
-        <div class="stat"><b>+20</b><span>Variedades en total</span></div>
-        <div class="stat"><b>100%</b><span>Producción propia</span></div>
-      </div>
-    </div>
-    <div class="nosotros-img">
-      <img src="img/badge.png" alt="Insignia Benidorm, desde 1975">
-    </div>
-  </div>
-</section>
 
 <section id="productos">
   <div class="wrap">
@@ -315,13 +285,7 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
         <p>Si ya trabajás con alguna empresa de transporte, perfecto — y si no, con gusto te ayudamos a consultar opciones.</p>
       </div>
     </div>
-      </div>
-    <div style="margin-top:24px;position:relative;border-radius:var(--radio);overflow:hidden;">
-      <img src="img/despacho-palet.jpg" alt="Pedido de Benidorm listo para despachar" style="width:100%;max-height:340px;object-fit:cover;display:block;">
-      <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(11,27,51,.75) 100%);"></div>
-      <div style="position:absolute;left:20px;bottom:16px;color:#fff;font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;text-shadow:0 2px 8px rgba(0,0,0,.6);max-width:90%;">
-        Servicio ágil, fácil y simple — despachamos tu mercadería a todo el país.
-      </div>
+  </div>
 </section>
 
 <section class="pedido" id="pedido">
