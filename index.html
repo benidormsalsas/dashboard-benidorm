@@ -6,17 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Benidorm — Aderezos y Salsas Especiales</title>
 <meta name="description" content="Aderezos y salsas especiales para tu negocio. Mayonesa, ketchup, mostaza, salsa golf, chimichurri y más. Pedidos directos por WhatsApp.">
-  <meta property="og:type" content="website">
-<meta property="og:site_name" content="Benidorm">
-<meta property="og:title" content="Benidorm — Aderezos y Salsas Especiales">
-<meta property="og:description" content="Aderezos y salsas especiales para tu negocio. Mayonesa, ketchup, mostaza, salsa golf, chimichurri y más. Pedidos directos por WhatsApp.">
-<meta property="og:url" content="https://benidormaderezos.ar/">
-<meta property="og:image" content="https://benidormaderezos.ar/img/foodtruck.jpg">
-<meta property="og:locale" content="es_AR">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Benidorm — Aderezos y Salsas Especiales">
-<meta name="twitter:description" content="Aderezos y salsas especiales para tu negocio. Pedidos directos por WhatsApp.">
-<meta name="twitter:image" content="https://benidormaderezos.ar/img/foodtruck.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -59,7 +48,9 @@ h1,h2,h3{font-family:'Montserrat',sans-serif;font-weight:900;line-height:1.15;}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--dorado-claro);margin-bottom:20px;}
 .hero h1{font-size:clamp(2.2rem,5.5vw,3.6rem);color:#fff;margin-bottom:18px;letter-spacing:-.5px;}
 .hero h1 span{color:var(--celeste);}
-.hero p{font-size:17px;color:rgba(255,255,255,.82);max-width:480px;margin-bottom:32px;}
+.hero p{font-size:17px;color:rgba(255,255,255,.82);max-width:480px;margin-bottom:22px;}
+.hero-tags{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:32px;}
+.hero-tags span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:7px 14px;border-radius:20px;font-size:13px;font-weight:600;color:#fff;white-space:nowrap;}
 .hero-ctas{display:flex;flex-wrap:wrap;gap:14px;}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:15px 26px;border-radius:12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;letter-spacing:.3px;border:none;cursor:pointer;transition:transform .15s,background .15s;}
 .btn:hover{transform:translateY(-2px);}
@@ -179,9 +170,14 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
 <header class="hero" id="top">
   <div class="hero-inner">
     <div>
-      <div class="hero-eyebrow">Industria Argentina</div>
+      <div class="hero-eyebrow">Venta Mayorista · Industria Argentina</div>
       <h1>Sumá sabor<br>a <span>todo.</span></h1>
-      <p>Aderezos y salsas especiales para comidas frías y calientes. Calidad y precios directos de fábrica para mayoristas y minoristas de todo el país.</p>
+      <p>Aderezos y salsas directo de fábrica para distribuidoras, kioscos, bares y restaurantes. Stock permanente y envíos a todo el país.</p>
+      <div class="hero-tags">
+        <span>📦 Stock permanente</span>
+        <span>💬 Pedido por WhatsApp</span>
+        <span>🚚 Envíos a todo el país</span>
+      </div>
       <div class="hero-ctas">
         <a class="btn btn-primary" href="pedido.html?origen=web">Hacé tu pedido →</a>
         <a class="btn btn-secondary" href="#productos">Ver productos</a>
@@ -204,7 +200,7 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
     <div class="carrusel-bloque">
       <div class="carrusel-cabecera">
         <h3>Formato bolsa</h3>
-        <p>Para locales de alta rotación y distribuidores.</p>
+        <p>Para locales de alta rotación y distribuidores. Caja x 4 unidades.</p>
       </div>
       <div class="carrusel">
         <button class="car-arrow" onclick="moverCarrusel('car-bolsas',-1)" aria-label="Anterior">‹</button>
@@ -222,7 +218,7 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
     <div class="carrusel-bloque">
       <div class="carrusel-cabecera">
         <h3>Pomos grandes</h3>
-        <p>La máxima variedad en aderezos y salsas especiales.</p>
+        <p>La máxima variedad en aderezos y salsas especiales. Caja x 12 unidades.</p>
       </div>
       <div class="carrusel">
         <button class="car-arrow" onclick="moverCarrusel('car-pomos-grandes',-1)" aria-label="Anterior">‹</button>
@@ -251,7 +247,7 @@ footer{background:var(--azul-oscuro);color:rgba(255,255,255,.7);padding:48px 0 2
     <div class="carrusel-bloque">
       <div class="carrusel-cabecera">
         <h3>Pomos chicos e individuales</h3>
-        <p>Ideales para consumo directo y servicio de mesa.</p>
+        <p>Ideales para consumo directo y servicio de mesa. Pomos chicos: caja x 12 — Individuales: caja x 198.</p>
       </div>
       <div class="carrusel">
         <button class="car-arrow" onclick="moverCarrusel('car-chicos',-1)" aria-label="Anterior">‹</button>
