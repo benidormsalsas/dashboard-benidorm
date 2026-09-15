@@ -213,6 +213,7 @@ window.onload = async function() {
           '</div>' +
         '</div>';
       renderProductos();
+      document.getElementById('btn-wrap').style.display = 'block';
     }
 
   } catch(e) {
@@ -409,6 +410,20 @@ function confirmarPedido() {
   var total = calcularTotal();
   if (total === 0) return;
   if (esOrigenWeb() && calcularTotalCajas() < MINIMO_CAJAS_WEB) return;
+
+  var inputNombre = document.getElementById('nombre-input');
+  if (inputNombre) {
+    var valNombre = inputNombre.value.trim();
+    if (valNombre) cliente.nombre = valNombre;
+  }
+  if (!cliente.nombre) {
+    if (inputNombre) {
+      inputNombre.style.border = '2px solid red';
+      inputNombre.focus();
+    }
+    alert('Por favor ingresá tu nombre antes de confirmar el pedido.');
+    return;
+  }
 
   var fecha = new Date().toLocaleDateString('es-AR');
   var totalCajasMsg = 0;
