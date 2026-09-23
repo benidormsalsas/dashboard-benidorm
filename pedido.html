@@ -445,6 +445,10 @@ function confirmarPedido() {
   msg += '\nTOTAL CAJAS: ' + totalCajasMsg;
   msg += '\nTOTAL: ' + formatPeso(total);
 
+  gtag('event', 'confirmar_pedido_whatsapp', {
+    'total_cajas': totalCajasMsg,
+    'total_pesos': total
+  });
   window.open('https://wa.me/' + WA_NUM + '?text=' + encodeURIComponent(msg), '_blank');
 
   document.getElementById('contenido').innerHTML =
