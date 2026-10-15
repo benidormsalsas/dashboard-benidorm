@@ -485,6 +485,7 @@ function confirmarPedido() {
     'total_cajas': totalCajasMsg,
     'total_pesos': total
   });
+    fbq('track', 'Contact', { value: total, currency: 'ARS' });
   window.open('https://wa.me/' + WA_NUM + '?text=' + encodeURIComponent(msg), '_blank');
 
   document.getElementById('contenido').innerHTML =
