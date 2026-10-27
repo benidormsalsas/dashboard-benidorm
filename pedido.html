@@ -424,12 +424,12 @@ function actualizarBoton() {
   var totalCajas = calcularTotalCajas();
   var btn = document.getElementById('btn-confirmar');
   var aviso = document.getElementById('aviso-minimo');
-  var faltaMinimo = esOrigenWeb() && total > 0 && totalCajas < MINIMO_CAJAS_WEB;
+  var faltaMinimo = total > 0 && totalCajas < MINIMO_CAJAS_WEB;
 
   if (faltaMinimo) {
     var faltan = MINIMO_CAJAS_WEB - totalCajas;
     aviso.style.display = 'block';
-    aviso.textContent = '⚠️ Pedido mínimo para compras por la web: ' + MINIMO_CAJAS_WEB + ' cajas. Te ' +
+    aviso.textContent = '⚠️ Pedido mínimo: ' + MINIMO_CAJAS_WEB + ' cajas. Te ' +
       (faltan === 1 ? 'falta 1 caja' : 'faltan ' + faltan + ' cajas') + ' para poder confirmar.';
     btn.disabled = true;
     btn.textContent = 'Mínimo ' + MINIMO_CAJAS_WEB + ' cajas para continuar';
@@ -445,7 +445,10 @@ function actualizarBoton() {
 function confirmarPedido() {
   var total = calcularTotal();
   if (total === 0) return;
-  if (esOrigenWeb() && calcularTotalCajas() < MINIMO_CAJAS_WEB) return;
+  if (calcularTotalCajas() < MINIMO_CAJAS_WEB) {
+    alert('El pedido mínimo es de ' + MINIMO_CAJAS_WEB + ' cajas.');
+    return;
+  }
 
   var inputNombre = document.getElementById('nombre-input');
   if (inputNombre) {
