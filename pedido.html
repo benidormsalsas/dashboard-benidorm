@@ -479,7 +479,7 @@ function confirmarPedido() {
   for (var i = 0; i < productos.length; i++) {
     var cant = cantidades[i] || 0;
     if (!cant) continue;
-    msg += '- ' + productos[i].nombre + ': ' + cant + ' u. x ' + formatPeso(productos[i].precio) + ' = ' + formatPeso(productos[i].precio * cant) + '\n';
+             msg += '- ' + cant + ' x ' + productos[i].nombre + '\n';
   }
   msg += '\nTOTAL CAJAS: ' + totalCajasMsg;
   msg += '\nTOTAL: ' + formatPeso(total);
